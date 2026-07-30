@@ -50,14 +50,51 @@ body {
   box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
 }
 
-/* Custom Input Styling & Autofill Fixes */
-.glass-input {
-  background-color: #0f172a !important;
+/* Custom Input Styling & Dark Theme Form Fixes */
+input,
+textarea,
+select,
+[type='text'],
+[type='email'],
+[type='url'],
+[type='password'],
+[type='number'],
+[type='search'] {
+  background-color: #0d121d !important;
+  background: #0d121d !important;
   color: #f8fafc !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-color: #1e293b !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  box-shadow: none !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+[type='text']:focus,
+[type='email']:focus,
+[type='url']:focus,
+[type='password']:focus,
+[type='number']:focus,
+[type='search']:focus {
+  background-color: #0d121d !important;
+  background: #0d121d !important;
+  color: #f8fafc !important;
+  border-color: #06b6d4 !important;
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.3) !important;
+  outline: none !important;
+}
+
+.glass-input {
+  background-color: #0d121d !important;
+  background: #0d121d !important;
+  color: #f8fafc !important;
+  border: 1px solid #1e293b !important;
   border-radius: 8px;
   padding: 8px 14px;
-  outline: none;
+  outline: none !important;
   transition: all 0.2s ease;
 }
 
@@ -67,7 +104,7 @@ body {
 
 .glass-input:focus {
   border-color: #06b6d4 !important;
-  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.25) !important;
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.3) !important;
 }
 
 /* Fix browser autofill / pasted link background & text color turning white */
@@ -79,14 +116,9 @@ textarea:-webkit-autofill:hover,
 textarea:-webkit-autofill:focus,
 select:-webkit-autofill {
   -webkit-text-fill-color: #f8fafc !important;
-  -webkit-box-shadow: 0 0 0px 1000px #0f172a inset !important;
+  -webkit-box-shadow: 0 0 0px 1000px #0d121d inset !important;
   transition: background-color 5000s ease-in-out 0s !important;
   color: #f8fafc !important;
-}
-
-input, textarea, select {
-  color: #f8fafc !important;
-  background-color: #0f172a;
 }
 
 /* Bento Grid System */

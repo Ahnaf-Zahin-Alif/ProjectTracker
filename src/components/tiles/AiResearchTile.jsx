@@ -92,6 +92,50 @@ export function AiResearchTile() {
     setSelectedImage(null);
   };
 
+  const handlePaste = (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image/')) {
+        const file = items[i].getAsFile();
+        if (file) {
+          e.preventDefault();
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            setSelectedImage({
+              name: file.name || `pasted-image-${Date.now()}.png`,
+              dataUrl: evt.target.result
+            });
+            showToast('📋 Image pasted from clipboard!');
+          };
+          reader.readAsDataURL(file);
+          break;
+        }
+      }
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer?.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        setSelectedImage({
+          name: file.name,
+          dataUrl: evt.target.result
+        });
+        showToast('📥 Image dropped!');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <TileWrapper
       title="GenAI Architecture & Breakdown"
@@ -111,7 +155,7 @@ export function AiResearchTile() {
         )
       }
     >
-      <div className="flex flex-col space-y-4">
+      <div className="flex flex-col space-y-4" onPaste={handlePaste}>
         
         {/* Agent Info Banner */}
         <div className="flex items-center justify-between p-3 rounded-xl bg-violet-950/40 border border-violet-800/60 text-xs">
@@ -131,13 +175,14 @@ export function AiResearchTile() {
         <form onSubmit={handleGenerate} className="space-y-3">
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Project Idea or Prompt
+              Project Idea or Prompt (Paste image with Ctrl+V)
             </label>
             <textarea
               rows={2}
-              placeholder="e.g., Build a real-time web video clipper using WebAssembly, ffmpeg.wasm, and React..."
+              placeholder="e.g., Build a real-time web video clipper using WebAssembly... (Paste screenshot via Ctrl+V)"
               value={promptText}
               onChange={(e) => setPromptText(e.target.value)}
+              onPaste={handlePaste}
               className="glass-input text-xs w-full resize-none"
               disabled={isLoading}
             />
@@ -158,16 +203,16 @@ export function AiResearchTile() {
             />
           </div>
 
-          {/* Image Upload Area */}
+          {/* Image Upload / Drag & Drop / Paste Area */}
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Attach Wireframe / UI Screenshot (Optional)
+              Attach Wireframe / UI Screenshot (Upload, Drag & Drop, or Paste Ctrl+V)
             </label>
             
             {selectedImage ? (
               <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 border border-cyan-500/50">
                 <div className="flex items-center space-x-3 min-w-0">
-                  <img src={selectedImage.dataUrl} alt="Preview" className="w-10 h-10 rounded-lg object-cover border border-slate-700 flex-shrink-0" />
+                  <img src={selectedImage.dataUrl} alt="Preview" className="w-12 h-12 rounded-lg object-cover border border-slate-700 flex-shrink-0" />
                   <div className="min-w-0">
                     <span className="block text-xs font-semibold text-slate-200 truncate">{selectedImage.name}</span>
                     <span className="block text-[10px] text-cyan-400">Image attached for Gemini analysis</span>
@@ -183,15 +228,18 @@ export function AiResearchTile() {
                 </button>
               </div>
             ) : (
-              <button
-                type="button"
+              <div
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
                 onClick={() => imageInputRef.current?.click()}
-                className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-dashed border-slate-700 text-slate-300 text-xs transition"
-                disabled={isLoading}
+                className="w-full flex flex-col items-center justify-center space-y-1 py-3 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-dashed border-slate-700 text-slate-300 text-xs transition cursor-pointer"
               >
-                <UploadCloud className="w-4 h-4 text-cyan-400" />
-                <span>Upload Design Mockup / Screenshot</span>
-              </button>
+                <div className="flex items-center space-x-2">
+                  <UploadCloud className="w-4 h-4 text-cyan-400" />
+                  <span className="font-medium">Upload Image, Drag & Drop, or Paste (Ctrl+V)</span>
+                </div>
+                <span className="text-[10px] text-slate-500">Supports PNG, JPG, WebP screenshots</span>
+              </div>
             )}
 
             <input

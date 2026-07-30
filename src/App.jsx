@@ -1016,11 +1016,45 @@ function AiResearchTile() {
     }
   };
 
+  const handlePaste = (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image/')) {
+        const file = items[i].getAsFile();
+        if (file) {
+          e.preventDefault();
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            setSelectedImage({ name: file.name || `pasted-${Date.now()}.png`, dataUrl: evt.target.result });
+            showToast('📋 Image pasted from clipboard!');
+          };
+          reader.readAsDataURL(file);
+          break;
+        }
+      }
+    }
+  };
+
+  const handleDragOver = (e) => e.preventDefault();
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer?.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        setSelectedImage({ name: file.name, dataUrl: evt.target.result });
+        showToast('📥 Image dropped!');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <TileWrapper title="GenAI Architecture & Breakdown" icon={Sparkles} badge="antigravity-preview-05-2026" colSpan="col-span-12 lg:col-span-6" headerAccent="text-violet-400" actions={
       !settings.apiKey && <button onClick={() => setIsApiKeyModalOpen(true)} className="flex items-center space-x-1 px-2 py-0.5 text-[11px] rounded bg-amber-500/10 text-amber-300 border border-amber-500/30"><Key className="w-3 h-3" /><span>Set Key</span></button>
     }>
-      <div className="flex flex-col space-y-4">
+      <div className="flex flex-col space-y-4" onPaste={handlePaste}>
         <div className="flex items-center justify-between p-3 rounded-xl bg-violet-950/40 border border-violet-800/60 text-xs">
           <div className="flex items-center space-x-2.5">
             <Bot className="w-4 h-4 text-violet-400" />
@@ -1034,8 +1068,8 @@ function AiResearchTile() {
 
         <form onSubmit={handleGenerate} className="space-y-3">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">Project Idea or Prompt</label>
-            <textarea rows={2} placeholder="e.g., Build a real-time web video clipper using WebAssembly and React..." value={promptText} onChange={(e) => setPromptText(e.target.value)} className="glass-input text-xs w-full resize-none" disabled={isLoading} />
+            <label className="block text-xs font-semibold text-slate-300 mb-1">Project Idea or Prompt (Paste image with Ctrl+V)</label>
+            <textarea rows={2} placeholder="e.g., Build a real-time web video clipper using WebAssembly... (Paste image via Ctrl+V)" value={promptText} onChange={(e) => setPromptText(e.target.value)} onPaste={handlePaste} className="glass-input text-xs w-full resize-none" disabled={isLoading} />
           </div>
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
@@ -1044,9 +1078,9 @@ function AiResearchTile() {
             <input type="url" placeholder="https://www.instagram.com/reel/... or GitHub URL" value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} className="glass-input text-xs w-full" disabled={isLoading} />
           </div>
 
-          {/* Image Upload Option */}
+          {/* Image Upload / Drop / Paste Zone */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">Attach Wireframe / UI Screenshot (Optional)</label>
+            <label className="block text-xs font-semibold text-slate-300 mb-1">Attach Wireframe / Screenshot (Upload, Drag & Drop, or Paste Ctrl+V)</label>
             {selectedImage ? (
               <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900 border border-cyan-500/50">
                 <div className="flex items-center space-x-3 min-w-0">
@@ -1056,9 +1090,10 @@ function AiResearchTile() {
                 <button type="button" onClick={() => setSelectedImage(null)} className="p-1.5 text-slate-400 hover:text-rose-400"><X className="w-4 h-4" /></button>
               </div>
             ) : (
-              <button type="button" onClick={() => imageInputRef.current?.click()} className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-dashed border-slate-700 text-slate-300 text-xs transition" disabled={isLoading}>
-                <Upload className="w-4 h-4 text-cyan-400" /><span>Upload Design Mockup / Screenshot</span>
-              </button>
+              <div onDragOver={handleDragOver} onDrop={handleDrop} onClick={() => imageInputRef.current?.click()} className="w-full flex flex-col items-center justify-center space-y-1 py-3 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-dashed border-slate-700 text-slate-300 text-xs transition cursor-pointer">
+                <div className="flex items-center space-x-2"><Upload className="w-4 h-4 text-cyan-400" /><span className="font-medium">Upload Image, Drag & Drop, or Paste (Ctrl+V)</span></div>
+                <span className="text-[10px] text-slate-500">Supports PNG, JPG, WebP screenshots</span>
+              </div>
             )}
             <input type="file" ref={imageInputRef} accept="image/*" onChange={handleImageChange} className="hidden" />
           </div>

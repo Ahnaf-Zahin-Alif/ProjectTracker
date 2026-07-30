@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Antigravity Tracker - Tiling Workspace & Focus Heatmap</title>
+    <meta name="description" content="Web-based tiling project tracker, focus timer, activity heatmap dashboard with Google Generative AI research integration." />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- Filter out Tailwind CDN production notice in browser console -->
+    <script>
+      (function() {
+        const origWarn = console.warn;
+        console.warn = function(...args) {
+          if (typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
+            return;
+          }
+          origWarn.apply(console, args);
+        };
+      })();
+    </script>
+
+    <!-- Tailwind CSS Play CDN Script -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              slate: {
+                950: '#07090e',
+                900: '#0d121d',
+                800: '#182030'
+              }
+            }
+          }
+        }
+      }
+    </script>
+
+    <link rel="stylesheet" href="/src/index.css" />
+  </head>
+  <body class="bg-slate-950 text-slate-100 antialiased selection:bg-cyan-500 selection:text-slate-950 min-h-screen">
+    <div id="root"></div>
+    <!-- Vite Application Script -->
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

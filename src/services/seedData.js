@@ -78,34 +78,13 @@ export function generateInitialHeatmapData() {
   const heatmap = {};
   const today = new Date();
 
-  // Generate 365 days of activity with random realistic intensity
+  // Generate 365 days of activity initialized cleanly without random numbers
   for (let i = 0; i < 365; i++) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
     const key = formatDateKey(d);
-
-    // Probability of having worked on that day
-    const dayOfWeek = d.getDay();
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const workChance = isWeekend ? 0.4 : 0.75;
-
-    if (Math.random() < workChance) {
-      // Logged minutes between 30 and 320
-      const minutes = Math.floor(Math.random() * 260) + 35;
-      const tasksCompleted = Math.floor(minutes / 45);
-      heatmap[key] = {
-        minutes,
-        tasksCompleted,
-        sessionsCount: Math.max(1, Math.floor(minutes / 30))
-      };
-    } else {
-      heatmap[key] = { minutes: 0, tasksCompleted: 0, sessionsCount: 0 };
-    }
+    heatmap[key] = { minutes: 0, tasksCompleted: 0, sessionsCount: 0 };
   }
-
-  // Ensure today has recent work
-  const todayKey = formatDateKey(today);
-  heatmap[todayKey] = { minutes: 125, tasksCompleted: 3, sessionsCount: 3 };
 
   return heatmap;
 }

@@ -198,7 +198,7 @@ export function AiResearchTile() {
               placeholder="https://www.instagram.com/reel/... or GitHub URL"
               value={sourceUrl}
               onChange={(e) => setSourceUrl(e.target.value)}
-              className="glass-input text-xs w-full"
+              className="glass-input text-xs w-full bg-slate-900 text-slate-100 placeholder-slate-500 font-mono"
               disabled={isLoading}
             />
           </div>

@@ -1075,7 +1075,7 @@ function AiResearchTile() {
             <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
               <span>Reference Link / Reel URL (Optional)</span><Globe className="w-3 h-3 text-slate-400" />
             </label>
-            <input type="url" placeholder="https://www.instagram.com/reel/... or GitHub URL" value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} className="glass-input text-xs w-full" disabled={isLoading} />
+            <input type="url" placeholder="https://www.instagram.com/reel/... or GitHub URL" value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} className="glass-input text-xs w-full bg-slate-900 text-slate-100 placeholder-slate-500 font-mono" disabled={isLoading} />
           </div>
 
           {/* Image Upload / Drop / Paste Zone */}

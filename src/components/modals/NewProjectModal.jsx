@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAppState } from '../../context/AppStateContext';
-import { Plus, X, FolderKanban } from 'lucide-react';
+import { Plus, X, FolderKanban, UploadCloud, Image as ImageIcon } from 'lucide-react';
 
 export function NewProjectModal() {
   const { isNewProjectModalOpen, setIsNewProjectModalOpen, addProject, showToast } = useAppState();
@@ -11,8 +11,26 @@ export function NewProjectModal() {
   const [targetHours, setTargetHours] = useState(10);
   const [tagsInput, setTagsInput] = useState('React, Tailwind');
   const [initialTaskInput, setInitialTaskInput] = useState('');
+  const [imageUrl, setImageUrl] = useState(null);
+
+  const fileInputRef = useRef(null);
 
   if (!isNewProjectModalOpen) return null;
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        showToast('⚠️ Please select an image file');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        setImageUrl(evt.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -39,6 +57,7 @@ export function NewProjectModal() {
       tags,
       targetHours: Number(targetHours) || 10,
       loggedMinutes: 0,
+      imageUrl: imageUrl || null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       tasks: initialTasks.length > 0 ? initialTasks : [
@@ -52,6 +71,7 @@ export function NewProjectModal() {
     setDescription('');
     setTagsInput('React, Tailwind');
     setInitialTaskInput('');
+    setImageUrl(null);
   };
 
   return (
@@ -61,7 +81,7 @@ export function NewProjectModal() {
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg glass-panel bg-slate-900/95 border-cyan-500/50 shadow-2xl overflow-hidden rounded-2xl p-6 space-y-4"
+        className="w-full max-w-lg glass-panel bg-slate-900/95 border-cyan-500/50 shadow-2xl overflow-hidden rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center space-x-2.5">
@@ -103,6 +123,42 @@ export function NewProjectModal() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="glass-input w-full text-xs resize-none"
+            />
+          </div>
+
+          {/* Project Cover Image Upload */}
+          <div>
+            <label className="block font-semibold text-slate-300 mb-1">Project Screenshot / Cover Image (Optional)</label>
+            {imageUrl ? (
+              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800">
+                <div className="flex items-center space-x-3">
+                  <img src={imageUrl} alt="Cover Preview" className="w-12 h-12 rounded-lg object-cover border border-slate-700" />
+                  <span className="text-xs text-cyan-400">Image attached</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setImageUrl(null)}
+                  className="p-1 text-slate-400 hover:text-rose-400"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-xl bg-slate-950/80 hover:bg-slate-900 border border-dashed border-slate-700 text-slate-300 text-xs transition"
+              >
+                <ImageIcon className="w-4 h-4 text-cyan-400" />
+                <span>Upload Cover Image / Wireframe</span>
+              </button>
+            )}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
             />
           </div>
 

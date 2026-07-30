@@ -134,6 +134,9 @@ export function ProjectListTile() {
                 >
                   <div className="flex items-start space-x-3">
                     <ChevronRight className={`w-4 h-4 text-slate-400 mt-1 transition-transform ${isExpanded ? 'rotate-90 text-cyan-400' : ''}`} />
+                    {proj.imageUrl && (
+                      <img src={proj.imageUrl} alt={proj.title} className="w-12 h-12 rounded-lg object-cover border border-slate-700/80 flex-shrink-0" />
+                    )}
                     <div>
                       <div className="flex items-center space-x-2 flex-wrap gap-y-1">
                         <h4 className="font-bold text-slate-100 text-sm hover:text-cyan-300 transition">

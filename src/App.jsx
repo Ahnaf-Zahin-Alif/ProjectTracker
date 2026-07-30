@@ -751,6 +751,9 @@ function ProjectListTile() {
               <div onClick={() => setExpandedProjectId(isExpanded ? null : proj.id)} className="p-4 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div className="flex items-start space-x-3">
                   <ChevronRight className={`w-4 h-4 text-slate-400 mt-1 transition-transform ${isExpanded ? 'rotate-90 text-cyan-400' : ''}`} />
+                  {proj.imageUrl && (
+                    <img src={proj.imageUrl} alt={proj.title} className="w-12 h-12 rounded-lg object-cover border border-slate-700 flex-shrink-0" />
+                  )}
                   <div>
                     <div className="flex items-center space-x-2 flex-wrap gap-y-1">
                       <h4 className="font-bold text-slate-100 text-sm">{proj.title}</h4>
@@ -968,9 +971,24 @@ function AiResearchTile() {
   const { addProject, settings, setIsApiKeyModalOpen, showToast } = useAppState();
   const [promptText, setPromptText] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState('');
   const [generatedResult, setGeneratedResult] = useState(null);
+  const imageInputRef = useRef(null);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        showToast('⚠️ Please select a valid image file');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (evt) => setSelectedImage({ name: file.name, dataUrl: evt.target.result });
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleGenerate = async (e) => {
     e.preventDefault();
@@ -979,10 +997,15 @@ function AiResearchTile() {
     setLoadingStep('Initializing @google/genai SDK (antigravity-preview-05-2026)...');
 
     try {
-      setTimeout(() => setLoadingStep('Executing google_search & url_context tools...'), 1000);
+      setTimeout(() => setLoadingStep(selectedImage ? 'Analyzing design mockup & google_search...' : 'Executing google_search & url_context tools...'), 1000);
       setTimeout(() => setLoadingStep('Structuring task breakdown JSON...'), 2200);
 
-      const result = await generateProjectBreakdown({ promptText, apiKey: settings.apiKey, sourceUrl: sourceUrl.trim() || null });
+      const result = await generateProjectBreakdown({
+        promptText,
+        apiKey: settings.apiKey,
+        sourceUrl: sourceUrl.trim() || null,
+        imageDataUrl: selectedImage ? selectedImage.dataUrl : null
+      });
       setGeneratedResult(result);
       showToast(`✨ Generated project plan: "${result.title}"`);
     } catch (err) {
@@ -1003,7 +1026,7 @@ function AiResearchTile() {
             <Bot className="w-4 h-4 text-violet-400" />
             <div>
               <span className="font-semibold text-slate-200">Agent Grounding Active</span>
-              <p className="text-[11px] text-slate-400">Uses <code className="text-violet-300">google_search</code> & <code className="text-violet-300">url_context</code></p>
+              <p className="text-[11px] text-slate-400">Uses <code className="text-violet-300">google_search</code>, <code className="text-violet-300">url_context</code> & Vision</p>
             </div>
           </div>
           <span className="px-2 py-0.5 text-[10px] font-mono rounded bg-violet-900 text-violet-200 border border-violet-700">antigravity-preview-05-2026</span>
@@ -1020,6 +1043,26 @@ function AiResearchTile() {
             </label>
             <input type="url" placeholder="https://www.instagram.com/reel/... or GitHub URL" value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} className="glass-input text-xs w-full" disabled={isLoading} />
           </div>
+
+          {/* Image Upload Option */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 mb-1">Attach Wireframe / UI Screenshot (Optional)</label>
+            {selectedImage ? (
+              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900 border border-cyan-500/50">
+                <div className="flex items-center space-x-3 min-w-0">
+                  <img src={selectedImage.dataUrl} alt="Preview" className="w-10 h-10 rounded-lg object-cover border border-slate-700 flex-shrink-0" />
+                  <div className="min-w-0"><span className="block text-xs font-semibold text-slate-200 truncate">{selectedImage.name}</span><span className="block text-[10px] text-cyan-400">Attached for Gemini vision</span></div>
+                </div>
+                <button type="button" onClick={() => setSelectedImage(null)} className="p-1.5 text-slate-400 hover:text-rose-400"><X className="w-4 h-4" /></button>
+              </div>
+            ) : (
+              <button type="button" onClick={() => imageInputRef.current?.click()} className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-dashed border-slate-700 text-slate-300 text-xs transition" disabled={isLoading}>
+                <Upload className="w-4 h-4 text-cyan-400" /><span>Upload Design Mockup / Screenshot</span>
+              </button>
+            )}
+            <input type="file" ref={imageInputRef} accept="image/*" onChange={handleImageChange} className="hidden" />
+          </div>
+
           <button type="submit" disabled={isLoading || !promptText.trim()} className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 text-white font-semibold text-xs shadow-lg shadow-violet-600/20 disabled:opacity-50">
             {isLoading ? (<><Loader2 className="w-4 h-4 animate-spin" /><span>{loadingStep}</span></>) : (<><Sparkles className="w-4 h-4 text-cyan-200" /><span>Research & Generate Structured JSON Plan</span></>)}
           </button>
@@ -1027,10 +1070,17 @@ function AiResearchTile() {
 
         {generatedResult && (
           <div className="p-4 rounded-xl bg-slate-900 border border-cyan-500/50 space-y-3">
-            <div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">{generatedResult.category}</span>
-              <h4 className="font-bold text-slate-100 text-sm mt-1">{generatedResult.title}</h4>
-              <p className="text-xs text-slate-300 mt-0.5">{generatedResult.description}</p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start space-x-3 min-w-0">
+                {generatedResult.imageUrl && (
+                  <img src={generatedResult.imageUrl} alt="Mockup" className="w-12 h-12 rounded-lg object-cover border border-slate-700 flex-shrink-0" />
+                )}
+                <div>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">{generatedResult.category}</span>
+                  <h4 className="font-bold text-slate-100 text-sm mt-1">{generatedResult.title}</h4>
+                  <p className="text-xs text-slate-300 mt-0.5">{generatedResult.description}</p>
+                </div>
+              </div>
             </div>
             <div className="space-y-1 max-h-40 overflow-y-auto pr-1">
               {generatedResult.tasks.map((task) => (
@@ -1040,7 +1090,7 @@ function AiResearchTile() {
                 </div>
               ))}
             </div>
-            <button onClick={() => { addProject(generatedResult); setGeneratedResult(null); setPromptText(''); setSourceUrl(''); }} className="w-full flex items-center justify-center space-x-2 py-2 rounded-lg bg-emerald-500 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20">
+            <button onClick={() => { addProject(generatedResult); setGeneratedResult(null); setPromptText(''); setSourceUrl(''); setSelectedImage(null); }} className="w-full flex items-center justify-center space-x-2 py-2 rounded-lg bg-emerald-500 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20">
               <PlusCircle className="w-4 h-4" /><span>Import Plan as Active Workspace Project</span>
             </button>
           </div>
@@ -1274,8 +1324,19 @@ function NewProjectModal() {
   const [targetHours, setTargetHours] = useState(10);
   const [tagsInput, setTagsInput] = useState('React, Tailwind');
   const [initialTaskInput, setInitialTaskInput] = useState('');
+  const [imageUrl, setImageUrl] = useState(null);
+  const fileInputRef = useRef(null);
 
   if (!isNewProjectModalOpen) return null;
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (evt) => setImageUrl(evt.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -1293,18 +1354,19 @@ function NewProjectModal() {
       tags,
       targetHours: Number(targetHours) || 10,
       loggedMinutes: 0,
+      imageUrl: imageUrl || null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       tasks: initialTasks.length > 0 ? initialTasks : [{ id: `task_default_${Date.now()}`, title: 'Setup project workspace and specs', completed: false, estimatedMinutes: 30 }]
     });
 
     setIsNewProjectModalOpen(false);
-    setTitle(''); setDescription(''); setTagsInput('React, Tailwind'); setInitialTaskInput('');
+    setTitle(''); setDescription(''); setTagsInput('React, Tailwind'); setInitialTaskInput(''); setImageUrl(null);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md px-4" onClick={() => setIsNewProjectModalOpen(false)}>
-      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg glass-panel bg-slate-900 border-cyan-500/50 shadow-2xl rounded-2xl p-6 space-y-4">
+      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg glass-panel bg-slate-900 border-cyan-500/50 shadow-2xl rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center space-x-2.5">
             <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"><FolderKanban className="w-5 h-5" /></div>
@@ -1316,6 +1378,25 @@ function NewProjectModal() {
         <form onSubmit={handleSubmit} className="space-y-3 text-xs">
           <div><label className="block font-semibold text-slate-300 mb-1">Project Title</label><input type="text" required placeholder="e.g. Fullstack Realtime Chat App" value={title} onChange={(e) => setTitle(e.target.value)} className="glass-input w-full text-xs" /></div>
           <div><label className="block font-semibold text-slate-300 mb-1">Description</label><textarea rows={2} placeholder="Brief overview..." value={description} onChange={(e) => setDescription(e.target.value)} className="glass-input w-full text-xs resize-none" /></div>
+
+          {/* Image Upload Option */}
+          <div>
+            <label className="block font-semibold text-slate-300 mb-1">Project Screenshot / Cover Image (Optional)</label>
+            {imageUrl ? (
+              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800">
+                <div className="flex items-center space-x-3">
+                  <img src={imageUrl} alt="Cover" className="w-10 h-10 rounded-lg object-cover border border-slate-700" />
+                  <span className="text-xs text-cyan-400">Image attached</span>
+                </div>
+                <button type="button" onClick={() => setImageUrl(null)} className="p-1 text-slate-400 hover:text-rose-400"><X className="w-4 h-4" /></button>
+              </div>
+            ) : (
+              <button type="button" onClick={() => fileInputRef.current?.click()} className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-xl bg-slate-950/80 hover:bg-slate-900 border border-dashed border-slate-700 text-slate-300 text-xs transition">
+                <Upload className="w-4 h-4 text-cyan-400" /><span>Upload Cover Image / Wireframe</span>
+              </button>
+            )}
+            <input type="file" ref={fileInputRef} accept="image/*" onChange={handleImageChange} className="hidden" />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div><label className="block font-semibold text-slate-300 mb-1">Category</label><select value={category} onChange={(e) => setCategory(e.target.value)} className="glass-input w-full text-xs"><option value="Web Dev">Web Dev</option><option value="AI Systems">AI Systems</option><option value="Mobile Dev">Mobile Dev</option><option value="Developer Tools">Developer Tools</option></select></div>
             <div><label className="block font-semibold text-slate-300 mb-1">Target Hours</label><input type="number" min={1} max={500} value={targetHours} onChange={(e) => setTargetHours(e.target.value)} className="glass-input w-full text-xs font-mono" /></div>

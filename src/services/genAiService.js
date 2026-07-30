@@ -6,7 +6,7 @@ import { GoogleGenAI } from '@google/genai';
  * Tools: google_search, url_context
  */
 
-export async function generateProjectBreakdown({ promptText, apiKey, sourceUrl = null }) {
+export async function generateProjectBreakdown({ promptText, apiKey, sourceUrl = null, imageDataUrl = null }) {
   // If user provided a custom API Key or if VITE_GEMINI_API_KEY environment variable is present
   const activeKey = apiKey || (import.meta.env ? import.meta.env.VITE_GEMINI_API_KEY : null);
 
@@ -15,17 +15,30 @@ export async function generateProjectBreakdown({ promptText, apiKey, sourceUrl =
       const ai = new GoogleGenAI({ apiKey: activeKey });
 
       const systemInstruction = `You are Antigravity, an elite software architect AI agent (antigravity-preview-05-2026).
-Your goal is to research GitHub repositories, technical documentation, and modern web best practices to generate a detailed, structured execution plan for a developer project.
+Your goal is to research GitHub repositories, technical documentation, design mockups, and modern web best practices to generate a detailed, structured execution plan for a developer project.
 Always output pure valid JSON adhering to the specified schema with milestones and actionable subtasks with time estimates.`;
 
-      let fullPrompt = `Analyze the following project idea or video link and break it down into milestones, step-by-step tasks, and time estimates:\n\nProject Prompt: ${promptText}`;
+      let fullPrompt = `Analyze the following project idea, design image, or video link and break it down into milestones, step-by-step tasks, and time estimates:\n\nProject Prompt: ${promptText}`;
       if (sourceUrl) {
         fullPrompt += `\n\nReference URL / Reel Link: ${sourceUrl}`;
       }
 
+      const contents = [];
+      if (imageDataUrl && imageDataUrl.includes(',')) {
+        const mimeType = imageDataUrl.substring(imageDataUrl.indexOf(':') + 1, imageDataUrl.indexOf(';')) || 'image/png';
+        const base64Data = imageDataUrl.substring(imageDataUrl.indexOf(',') + 1);
+        contents.push({
+          inlineData: {
+            mimeType,
+            data: base64Data
+          }
+        });
+      }
+      contents.push(fullPrompt);
+
       const response = await ai.models.generateContent({
         model: 'antigravity-preview-05-2026',
-        contents: fullPrompt,
+        contents,
         config: {
           systemInstruction,
           tools: [
@@ -70,7 +83,7 @@ Always output pure valid JSON adhering to the specified schema with milestones a
 
       if (response && response.text) {
         const parsed = JSON.parse(response.text);
-        return formatGenAiResponse(parsed, sourceUrl);
+        return formatGenAiResponse(parsed, sourceUrl, imageDataUrl);
       }
     } catch (err) {
       console.warn('Real Gemini API call encountered an issue, seamlessly switching to intelligent fallback generator:', err);
@@ -78,10 +91,10 @@ Always output pure valid JSON adhering to the specified schema with milestones a
   }
 
   // Fallback / Offline / Pre-configured Generator
-  return generateFallbackBreakdown(promptText, sourceUrl);
+  return generateFallbackBreakdown(promptText, sourceUrl, imageDataUrl);
 }
 
-function formatGenAiResponse(rawJson, sourceUrl) {
+function formatGenAiResponse(rawJson, sourceUrl, imageDataUrl = null) {
   const allTasks = [];
   let taskIdCounter = 1;
 
@@ -112,6 +125,7 @@ function formatGenAiResponse(rawJson, sourceUrl) {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     sourceUrl: sourceUrl || null,
+    imageUrl: imageDataUrl || null,
     tasks: allTasks.length > 0 ? allTasks : [
       { id: `task_1`, title: 'Setup project architecture and repository', completed: false, estimatedMinutes: 30 },
       { id: `task_2`, title: 'Implement core application features', completed: false, estimatedMinutes: 120 },
@@ -123,7 +137,7 @@ function formatGenAiResponse(rawJson, sourceUrl) {
 /**
  * Generates an intelligent, context-aware project breakdown offline/without API key
  */
-function generateFallbackBreakdown(promptText, sourceUrl) {
+function generateFallbackBreakdown(promptText, sourceUrl, imageDataUrl = null) {
   const cleanPrompt = promptText.trim();
   const timestamp = Date.now();
 
@@ -157,6 +171,7 @@ function generateFallbackBreakdown(promptText, sourceUrl) {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     sourceUrl: sourceUrl || null,
+    imageUrl: imageDataUrl || null,
     tasks: [
       {
         id: `task_fb_${timestamp}_1`,

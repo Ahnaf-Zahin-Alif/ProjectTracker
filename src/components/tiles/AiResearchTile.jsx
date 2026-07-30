@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAppState } from '../../context/AppStateContext';
 import { TileWrapper } from './TileWrapper';
 import { 
@@ -12,7 +12,10 @@ import {
   Loader2, 
   Globe,
   PlusCircle,
-  Key
+  Key,
+  UploadCloud,
+  X,
+  FileImage
 } from 'lucide-react';
 import { generateProjectBreakdown } from '../../services/genAiService';
 
@@ -21,9 +24,30 @@ export function AiResearchTile() {
 
   const [promptText, setPromptText] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null); // { name, dataUrl }
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState('');
   const [generatedResult, setGeneratedResult] = useState(null);
+
+  const imageInputRef = useRef(null);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        showToast('⚠️ Please select a valid image file');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        setSelectedImage({
+          name: file.name,
+          dataUrl: evt.target.result
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleGenerate = async (e) => {
     e.preventDefault();
@@ -34,7 +58,7 @@ export function AiResearchTile() {
 
     try {
       setTimeout(() => {
-        setLoadingStep('Executing google_search & url_context tools on GitHub & Web...');
+        setLoadingStep(selectedImage ? 'Analyzing design mockup & executing google_search...' : 'Executing google_search & url_context tools on GitHub & Web...');
       }, 1000);
 
       setTimeout(() => {
@@ -44,7 +68,8 @@ export function AiResearchTile() {
       const result = await generateProjectBreakdown({
         promptText,
         apiKey: settings.apiKey,
-        sourceUrl: sourceUrl.trim() || null
+        sourceUrl: sourceUrl.trim() || null,
+        imageDataUrl: selectedImage ? selectedImage.dataUrl : null
       });
 
       setGeneratedResult(result);
@@ -64,6 +89,7 @@ export function AiResearchTile() {
     setGeneratedResult(null);
     setPromptText('');
     setSourceUrl('');
+    setSelectedImage(null);
   };
 
   return (
@@ -93,7 +119,7 @@ export function AiResearchTile() {
             <Bot className="w-4 h-4 text-violet-400" />
             <div>
               <span className="font-semibold text-slate-200">Agent Grounding Active</span>
-              <p className="text-[11px] text-slate-400">Uses <code className="text-violet-300">google_search</code> & <code className="text-violet-300">url_context</code></p>
+              <p className="text-[11px] text-slate-400">Uses <code className="text-violet-300">google_search</code>, <code className="text-violet-300">url_context</code> & Vision</p>
             </div>
           </div>
           <span className="px-2 py-0.5 text-[10px] font-mono rounded bg-violet-900/80 text-violet-200 border border-violet-700">
@@ -132,6 +158,51 @@ export function AiResearchTile() {
             />
           </div>
 
+          {/* Image Upload Area */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 mb-1">
+              Attach Wireframe / UI Screenshot (Optional)
+            </label>
+            
+            {selectedImage ? (
+              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 border border-cyan-500/50">
+                <div className="flex items-center space-x-3 min-w-0">
+                  <img src={selectedImage.dataUrl} alt="Preview" className="w-10 h-10 rounded-lg object-cover border border-slate-700 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <span className="block text-xs font-semibold text-slate-200 truncate">{selectedImage.name}</span>
+                    <span className="block text-[10px] text-cyan-400">Image attached for Gemini analysis</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedImage(null)}
+                  className="p-1.5 text-slate-400 hover:text-rose-400 transition"
+                  title="Remove Image"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
+                className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-dashed border-slate-700 text-slate-300 text-xs transition"
+                disabled={isLoading}
+              >
+                <UploadCloud className="w-4 h-4 text-cyan-400" />
+                <span>Upload Design Mockup / Screenshot</span>
+              </button>
+            )}
+
+            <input
+              type="file"
+              ref={imageInputRef}
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+          </div>
+
           <button
             type="submit"
             disabled={isLoading || !promptText.trim()}
@@ -154,16 +225,21 @@ export function AiResearchTile() {
         {/* Generated Structured Output Preview */}
         {generatedResult && (
           <div className="p-4 rounded-xl bg-slate-900/90 border border-cyan-500/50 space-y-3 animate-in fade-in duration-300">
-            <div className="flex items-start justify-between">
-              <div>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-                  {generatedResult.category}
-                </span>
-                <h4 className="font-bold text-slate-100 text-sm mt-1">{generatedResult.title}</h4>
-                <p className="text-xs text-slate-300 mt-0.5">{generatedResult.description}</p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start space-x-3 min-w-0">
+                {generatedResult.imageUrl && (
+                  <img src={generatedResult.imageUrl} alt="Project Mockup" className="w-12 h-12 rounded-lg object-cover border border-slate-700 flex-shrink-0" />
+                )}
+                <div>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                    {generatedResult.category}
+                  </span>
+                  <h4 className="font-bold text-slate-100 text-sm mt-1">{generatedResult.title}</h4>
+                  <p className="text-xs text-slate-300 mt-0.5">{generatedResult.description}</p>
+                </div>
               </div>
 
-              <span className="text-xs font-mono font-bold text-cyan-400 bg-slate-950 px-2 py-1 rounded border border-slate-800">
+              <span className="text-xs font-mono font-bold text-cyan-400 bg-slate-950 px-2 py-1 rounded border border-slate-800 flex-shrink-0">
                 ~{generatedResult.targetHours}h Target
               </span>
             </div>

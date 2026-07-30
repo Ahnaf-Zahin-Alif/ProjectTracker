@@ -2,12 +2,18 @@ import { INITIAL_PROJECTS, INITIAL_NOTES, generateInitialHeatmapData } from './s
 import { getTodayDateKey } from '../utils/dateUtils';
 
 const KEYS = {
-  PROJECTS: 'pt_projects_v1',
-  HEATMAP: 'pt_heatmap_v1',
-  TIMER: 'pt_timer_v1',
-  SETTINGS: 'pt_settings_v1',
-  NOTES: 'pt_notes_v1'
+  PROJECTS: 'pt_projects_v2',
+  HEATMAP: 'pt_heatmap_v2',
+  TIMER: 'pt_timer_v2',
+  SETTINGS: 'pt_settings_v2',
+  NOTES: 'pt_notes_v2'
 };
+
+// Purge legacy v1 random data from localStorage if present
+try {
+  localStorage.removeItem('pt_projects_v1');
+  localStorage.removeItem('pt_heatmap_v1');
+} catch (e) {}
 
 export const storageService = {
   getProjects() {

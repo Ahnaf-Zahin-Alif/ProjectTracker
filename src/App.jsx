@@ -10,6 +10,8 @@ import {
   Youtube, ShieldCheck 
 } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
+import { KanbanBoardPage } from './components/pages/KanbanBoardPage';
+import { ProjectWorkspacesPage } from './components/pages/ProjectWorkspacesPage';
 
 /* ==========================================================================
    1. DATE & TIME UTILITIES
@@ -628,7 +630,7 @@ function Header() {
               <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-cyan-400 via-teal-200 to-violet-400 bg-clip-text text-transparent">ANTIGRAVITY</span>
               <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">v2026.5</span>
             </div>
-            <p className="text-xs text-slate-400 font-medium">Tiling Tracker & GenAI Research Dashboard</p>
+            <p className="text-xs text-slate-400 font-medium">Project Manager</p>
           </div>
         </div>
 
@@ -1057,17 +1059,6 @@ function AiResearchTile() {
       !settings.apiKey && <button onClick={() => setIsApiKeyModalOpen(true)} className="flex items-center space-x-1 px-2 py-0.5 text-[11px] rounded bg-amber-500/10 text-amber-300 border border-amber-500/30"><Key className="w-3 h-3" /><span>Set Key</span></button>
     }>
       <div className="flex flex-col space-y-4" onPaste={handlePaste}>
-        <div className="flex items-center justify-between p-3 rounded-xl bg-violet-950/40 border border-violet-800/60 text-xs">
-          <div className="flex items-center space-x-2.5">
-            <Bot className="w-4 h-4 text-violet-400" />
-            <div>
-              <span className="font-semibold text-slate-200">Agent Grounding Active</span>
-              <p className="text-[11px] text-slate-400">Uses <code className="text-violet-300">google_search</code>, <code className="text-violet-300">url_context</code> & Vision</p>
-            </div>
-          </div>
-          <span className="px-2 py-0.5 text-[10px] font-mono rounded bg-violet-900 text-violet-200 border border-violet-700">antigravity-preview-05-2026</span>
-        </div>
-
         <form onSubmit={handleGenerate} className="space-y-3">
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1">Project Idea or Prompt (Paste image with Ctrl+V)</label>
@@ -1178,20 +1169,6 @@ function AnalyticsTile() {
   );
 }
 
-function QuickNotesTile() {
-  const { notes, setNotes, showToast } = useAppState();
-  return (
-    <TileWrapper title="Quick Scratchpad & Drafts" icon={FileText} badge="Auto-Saved" colSpan="col-span-12 lg:col-span-6" headerAccent="text-amber-400" actions={
-      <button onClick={() => showToast('📝 Scratchpad notes saved!')} className="flex items-center space-x-1 px-2.5 py-1 text-xs rounded bg-amber-500/10 text-amber-300 border border-amber-500/30"><Save className="w-3.5 h-3.5" /><span>Save</span></button>
-    }>
-      <div className="flex flex-col h-full space-y-2">
-        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Jot down quick thoughts or code snippets..." className="glass-input font-mono text-xs w-full h-64 resize-none leading-relaxed" />
-        <div className="flex items-center justify-between text-[11px] text-slate-500"><span>Persists in localStorage</span><span>{notes.length} chars</span></div>
-      </div>
-    </TileWrapper>
-  );
-}
-
 function BentoGrid() {
   return (
     <main className="max-w-7xl mx-auto px-4 lg:px-8 py-6">
@@ -1201,7 +1178,6 @@ function BentoGrid() {
         <ContributionHeatmapTile />
         <AiResearchTile />
         <AnalyticsTile />
-        <QuickNotesTile />
       </div>
     </main>
   );
@@ -1451,12 +1427,18 @@ function NewProjectModal() {
    7. MAIN APP APPLICATION ENTRYPOINT
    ========================================================================== */
 function AppContent() {
-  const { toastMessage } = useAppState();
+  const { toastMessage, currentView } = useAppState();
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-slate-950">
       <Header />
-      <BentoGrid />
+      {currentView === 'workspaces' ? (
+        <ProjectWorkspacesPage />
+      ) : currentView === 'kanban' ? (
+        <KanbanBoardPage />
+      ) : (
+        <BentoGrid />
+      )}
 
       <footer className="mt-auto py-6 border-t border-slate-900 bg-slate-950/80 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">

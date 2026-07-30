@@ -157,21 +157,6 @@ export function AiResearchTile() {
       }
     >
       <div className="flex flex-col space-y-4" onPaste={handlePaste}>
-        
-        {/* Agent Info Banner */}
-        <div className="flex items-center justify-between p-3 rounded-xl bg-violet-950/40 border border-violet-800/60 text-xs">
-          <div className="flex items-center space-x-2.5">
-            <Bot className="w-4 h-4 text-violet-400" />
-            <div>
-              <span className="font-semibold text-slate-200">Agent Grounding Active</span>
-              <p className="text-[11px] text-slate-400">Uses <code className="text-violet-300">google_search</code>, <code className="text-violet-300">url_context</code> & Vision</p>
-            </div>
-          </div>
-          <span className="px-2 py-0.5 text-[10px] font-mono rounded bg-violet-900/80 text-violet-200 border border-violet-700">
-            antigravity-preview-05-2026
-          </span>
-        </div>
-
         {/* Input Form */}
         <form onSubmit={handleGenerate} className="space-y-3">
           <div>

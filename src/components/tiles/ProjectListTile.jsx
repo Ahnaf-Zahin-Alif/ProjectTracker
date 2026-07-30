@@ -12,7 +12,8 @@ import {
   Clock, 
   Tag, 
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Kanban
 } from 'lucide-react';
 import { formatMinutesToHours } from '../../utils/dateUtils';
 
@@ -26,7 +27,9 @@ export function ProjectListTile() {
     deleteProject,
     setIsNewProjectModalOpen,
     setSelectedProjectDetail,
-    startTimer
+    startTimer,
+    setCurrentView,
+    setSelectedKanbanProjectId
   } = useAppState();
 
   const [filter, setFilter] = useState('all'); // 'all' | 'in-progress' | 'completed'

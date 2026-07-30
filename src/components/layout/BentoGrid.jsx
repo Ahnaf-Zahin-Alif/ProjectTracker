@@ -4,7 +4,6 @@ import { FocusTimerTile } from '../tiles/FocusTimerTile';
 import { ContributionHeatmapTile } from '../tiles/ContributionHeatmapTile';
 import { AiResearchTile } from '../tiles/AiResearchTile';
 import { AnalyticsTile } from '../tiles/AnalyticsTile';
-import { QuickNotesTile } from '../tiles/QuickNotesTile';
 
 export function BentoGrid() {
   return (
@@ -20,9 +19,6 @@ export function BentoGrid() {
         {/* Row 3: GenAI Breakdown (6 cols) + Analytics (6 cols) */}
         <AiResearchTile />
         <AnalyticsTile />
-
-        {/* Row 4: Scratchpad Notes (6 cols) */}
-        <QuickNotesTile />
       </div>
     </main>
   );

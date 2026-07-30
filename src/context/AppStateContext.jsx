@@ -25,6 +25,8 @@ export function AppStateProvider({ children }) {
   const [elapsedSessionSeconds, setElapsedSessionSeconds] = useState(0);
 
   // 6. Modals & Overlays State
+  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'kanban'
+  const [selectedKanbanProjectId, setSelectedKanbanProjectId] = useState('all');
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isReelModalOpen, setIsReelModalOpen] = useState(false);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
@@ -206,6 +208,46 @@ export function AppStateProvider({ children }) {
     }));
   };
 
+  const updateTaskStatus = (projectId, taskId, newStatus) => {
+    const isDone = newStatus === 'done';
+    const updated = projects.map(p => {
+      if (p.id === projectId) {
+        const updatedTasks = (p.tasks || []).map(t => {
+          if (t.id === taskId) {
+            if (isDone && !t.completed && settings.soundEnabled) {
+              audioService.playTaskComplete();
+            }
+            return { ...t, status: newStatus, completed: isDone };
+          }
+          return t;
+        });
+        const allCompleted = updatedTasks.length > 0 && updatedTasks.every(t => t.completed || t.status === 'done');
+        return {
+          ...p,
+          tasks: updatedTasks,
+          status: allCompleted ? 'completed' : p.status,
+          updatedAt: new Date().toISOString()
+        };
+      }
+      return p;
+    });
+    setProjects(updated);
+  };
+
+  const deleteTaskFromProject = (projectId, taskId) => {
+    setProjects(projects.map(p => {
+      if (p.id === projectId) {
+        return {
+          ...p,
+          tasks: (p.tasks || []).filter(t => t.id !== taskId),
+          updatedAt: new Date().toISOString()
+        };
+      }
+      return p;
+    }));
+    showToast('🗑️ Task removed');
+  };
+
   // Keyboard shortcut listener for Ctrl+K / Cmd+K
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -229,6 +271,10 @@ export function AppStateProvider({ children }) {
         setSettings,
         notes,
         setNotes,
+        currentView,
+        setCurrentView,
+        selectedKanbanProjectId,
+        setSelectedKanbanProjectId,
 
         // Timer
         timerMode,
@@ -245,6 +291,8 @@ export function AppStateProvider({ children }) {
         deleteProject,
         toggleTaskCompletion,
         addTaskToProject,
+        updateTaskStatus,
+        deleteTaskFromProject,
 
         // Modals
         isCommandPaletteOpen,

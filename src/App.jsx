@@ -992,7 +992,9 @@ function AiResearchTile() {
 
   const handleGenerate = async (e) => {
     e.preventDefault();
-    if (!promptText.trim()) return;
+    const effectivePrompt = promptText.trim() || (selectedImage ? 'Build and architect developer project from attached UI mockup screenshot' : sourceUrl.trim() ? `Analyze and architect project from reference link: ${sourceUrl}` : '');
+    if (!effectivePrompt) return;
+
     setIsLoading(true);
     setLoadingStep('Initializing @google/genai SDK (antigravity-preview-05-2026)...');
 
@@ -1001,7 +1003,7 @@ function AiResearchTile() {
       setTimeout(() => setLoadingStep('Structuring task breakdown JSON...'), 2200);
 
       const result = await generateProjectBreakdown({
-        promptText,
+        promptText: effectivePrompt,
         apiKey: settings.apiKey,
         sourceUrl: sourceUrl.trim() || null,
         imageDataUrl: selectedImage ? selectedImage.dataUrl : null
@@ -1098,7 +1100,7 @@ function AiResearchTile() {
             <input type="file" ref={imageInputRef} accept="image/*" onChange={handleImageChange} className="hidden" />
           </div>
 
-          <button type="submit" disabled={isLoading || !promptText.trim()} className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 text-white font-semibold text-xs shadow-lg shadow-violet-600/20 disabled:opacity-50">
+          <button type="submit" disabled={isLoading || (!promptText.trim() && !sourceUrl.trim() && !selectedImage)} className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 text-white font-semibold text-xs shadow-lg shadow-violet-600/20 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">
             {isLoading ? (<><Loader2 className="w-4 h-4 animate-spin" /><span>{loadingStep}</span></>) : (<><Sparkles className="w-4 h-4 text-cyan-200" /><span>Research & Generate Structured JSON Plan</span></>)}
           </button>
         </form>

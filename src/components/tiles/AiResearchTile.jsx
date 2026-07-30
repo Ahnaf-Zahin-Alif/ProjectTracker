@@ -51,7 +51,8 @@ export function AiResearchTile() {
 
   const handleGenerate = async (e) => {
     e.preventDefault();
-    if (!promptText.trim()) return;
+    const effectivePrompt = promptText.trim() || (selectedImage ? 'Build and architect developer project from attached UI mockup screenshot' : sourceUrl.trim() ? `Analyze and architect project from reference link: ${sourceUrl}` : '');
+    if (!effectivePrompt) return;
 
     setIsLoading(true);
     setLoadingStep('Initializing @google/genai SDK (antigravity-preview-05-2026)...');
@@ -66,7 +67,7 @@ export function AiResearchTile() {
       }, 2200);
 
       const result = await generateProjectBreakdown({
-        promptText,
+        promptText: effectivePrompt,
         apiKey: settings.apiKey,
         sourceUrl: sourceUrl.trim() || null,
         imageDataUrl: selectedImage ? selectedImage.dataUrl : null
@@ -253,8 +254,8 @@ export function AiResearchTile() {
 
           <button
             type="submit"
-            disabled={isLoading || !promptText.trim()}
-            className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 text-white font-semibold text-xs transition shadow-lg shadow-violet-600/20 disabled:opacity-50"
+            disabled={isLoading || (!promptText.trim() && !sourceUrl.trim() && !selectedImage)}
+            className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 text-white font-semibold text-xs transition shadow-lg shadow-violet-600/20 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <>

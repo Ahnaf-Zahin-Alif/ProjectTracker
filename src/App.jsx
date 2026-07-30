@@ -7,7 +7,7 @@ import {
   ChevronRight, Pause, RotateCcw, Timer, Coffee, Volume2, VolumeX, 
   Target, Info, Bot, Globe, PlusCircle, Loader2, BarChart3, TrendingUp, 
   Award, PieChart, FileText, Save, X, ArrowRight, Instagram, Facebook, 
-  Youtube, ShieldCheck 
+  Youtube, ShieldCheck, LayoutDashboard, Kanban 
 } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
 import { KanbanBoardPage } from './components/pages/KanbanBoardPage';
@@ -615,23 +615,64 @@ export function useAppState() {
    6. UI COMPONENTS & TILES
    ========================================================================== */
 function Header() {
-  const { setIsCommandPaletteOpen, setIsNewProjectModalOpen } = useAppState();
+  const { setIsCommandPaletteOpen, setIsNewProjectModalOpen, currentView, setCurrentView } = useAppState();
 
   return (
     <header className="sticky top-0 z-30 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 px-4 lg:px-8 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-        {/* Left: Branding */}
-        <div className="flex items-center space-x-3">
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 via-indigo-500 to-violet-600 shadow-lg shadow-cyan-500/20">
-            <Zap className="w-5 h-5 text-white animate-pulse" />
-          </div>
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-cyan-400 via-teal-200 to-violet-400 bg-clip-text text-transparent">ANTIGRAVITY</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">v2026.5</span>
+        {/* Left: Branding & View Tabs */}
+        <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-3">
+            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 via-indigo-500 to-violet-600 shadow-lg shadow-cyan-500/20">
+              <Zap className="w-5 h-5 text-white animate-pulse" />
             </div>
-            <p className="text-xs text-slate-400 font-medium">Project Manager</p>
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-cyan-400 via-teal-200 to-violet-400 bg-clip-text text-transparent">ANTIGRAVITY</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">v2026.5</span>
+              </div>
+              <p className="text-xs text-slate-400 font-medium">Project Manager</p>
+            </div>
           </div>
+
+          {/* Navigation View Switcher Tabs */}
+          <nav className="flex items-center space-x-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+            <button
+              onClick={() => setCurrentView('dashboard')}
+              className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                currentView === 'dashboard'
+                  ? 'bg-gradient-to-r from-cyan-500 to-violet-600 text-white shadow-md shadow-cyan-500/10'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
+            >
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span>Dashboard</span>
+            </button>
+
+            <button
+              onClick={() => setCurrentView('workspaces')}
+              className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                currentView === 'workspaces'
+                  ? 'bg-gradient-to-r from-cyan-500 to-violet-600 text-white shadow-md shadow-cyan-500/10'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
+            >
+              <FolderKanban className="w-3.5 h-3.5" />
+              <span>Workspaces (Twin-Tile)</span>
+            </button>
+
+            <button
+              onClick={() => setCurrentView('kanban')}
+              className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                currentView === 'kanban'
+                  ? 'bg-gradient-to-r from-cyan-500 to-violet-600 text-white shadow-md shadow-cyan-500/10'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
+            >
+              <Kanban className="w-3.5 h-3.5" />
+              <span>Kanban Board</span>
+            </button>
+          </nav>
         </div>
 
         {/* Right: Search & New Project Buttons */}

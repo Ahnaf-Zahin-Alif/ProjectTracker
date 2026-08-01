@@ -1,12 +1,26 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { storageService } from '../services/storageService';
 import { audioService } from '../services/audioService';
+import { generateDefaultSubtasks } from '../services/seedData';
 
 const AppStateContext = createContext(null);
 
 export function AppStateProvider({ children }) {
   // 1. Projects State
-  const [projects, setProjects] = useState(() => storageService.getProjects());
+  const [projects, setProjects] = useState(() => {
+    const loaded = storageService.getProjects();
+    return loaded.map(p => {
+      if (!p.tasks || p.tasks.length < 5) {
+        return {
+          ...p,
+          tasks: (p.tasks && p.tasks.length > 0)
+            ? [...p.tasks, ...generateDefaultSubtasks(p.title)]
+            : generateDefaultSubtasks(p.title)
+        };
+      }
+      return p;
+    });
+  });
 
   // 2. Heatmap State
   const [heatmap, setHeatmap] = useState(() => storageService.getHeatmap());
@@ -140,10 +154,21 @@ export function AppStateProvider({ children }) {
 
   // Project Management Actions
   const addProject = (newProject) => {
-    const updated = [newProject, ...projects];
+    const tasks = (newProject.tasks && newProject.tasks.length >= 10)
+      ? newProject.tasks
+      : (newProject.tasks && newProject.tasks.length > 0)
+        ? [...newProject.tasks, ...generateDefaultSubtasks(newProject.title)]
+        : generateDefaultSubtasks(newProject.title);
+
+    const projectWithSubtasks = {
+      ...newProject,
+      tasks
+    };
+
+    const updated = [projectWithSubtasks, ...projects];
     setProjects(updated);
-    if (!activeProjectId) setActiveProjectId(newProject.id);
-    showToast(`✨ Project "${newProject.title}" created successfully!`);
+    if (!activeProjectId) setActiveProjectId(projectWithSubtasks.id);
+    showToast(`✨ Project "${projectWithSubtasks.title}" created with ${tasks.length} subtasks!`);
   };
 
   const updateProject = (updatedProject) => {

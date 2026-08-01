@@ -564,13 +564,39 @@ export function AppStateProvider({ children }) {
   };
 
   const addTaskToProject = (projectId, taskTitle, estimatedMinutes = 30) => {
-    const newTask = { id: `task_${Date.now()}`, title: taskTitle, completed: false, estimatedMinutes };
+    const newTask = { id: `task_${Date.now()}`, title: taskTitle, completed: false, status: 'todo', estimatedMinutes };
     setProjects(projects.map(p => {
       if (p.id === projectId) {
         return { ...p, tasks: [...(p.tasks || []), newTask], updatedAt: new Date().toISOString() };
       }
       return p;
     }));
+  };
+
+  const updateTaskStatus = (projectId, taskId, status) => {
+    const updated = projects.map(p => {
+      if (p.id === projectId) {
+        const updatedTasks = (p.tasks || []).map(t => {
+          if (t.id === taskId) {
+            return { ...t, status, completed: status === 'done' };
+          }
+          return t;
+        });
+        return { ...p, tasks: updatedTasks, updatedAt: new Date().toISOString() };
+      }
+      return p;
+    });
+    setProjects(updated);
+  };
+
+  const deleteTaskFromProject = (projectId, taskId) => {
+    const updated = projects.map(p => {
+      if (p.id === projectId) {
+        return { ...p, tasks: (p.tasks || []).filter(t => t.id !== taskId), updatedAt: new Date().toISOString() };
+      }
+      return p;
+    });
+    setProjects(updated);
   };
 
   useEffect(() => {
@@ -590,7 +616,7 @@ export function AppStateProvider({ children }) {
         projects, activeProjectId, setActiveProjectId, heatmap, settings, setSettings, notes, setNotes,
         currentView, setCurrentView,
         timerMode, timerSeconds, isRunning, elapsedSessionSeconds, startTimer, pauseTimer, resetTimer,
-        addProject, deleteProject, toggleTaskCompletion, addTaskToProject,
+        addProject, deleteProject, toggleTaskCompletion, addTaskToProject, updateTaskStatus, deleteTaskFromProject,
         isCommandPaletteOpen, setIsCommandPaletteOpen, isReelModalOpen, setIsReelModalOpen,
         isApiKeyModalOpen, setIsApiKeyModalOpen, isNewProjectModalOpen, setIsNewProjectModalOpen,
         toastMessage, showToast,

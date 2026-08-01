@@ -48,7 +48,7 @@ export function FocusTimerTile() {
       title="Focus Timer & Pomodoro"
       icon={Timer}
       badge={isRunning ? 'RUNNING' : 'PAUSED'}
-      colSpan="col-span-12 lg:col-span-5"
+      colSpan="col-span-12"
       headerAccent="text-indigo-400"
       actions={
         <button

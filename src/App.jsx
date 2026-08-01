@@ -670,7 +670,7 @@ function FocusTimerTile() {
   const strokeDashoffset = 283 * (1 - progressPercent);
 
   return (
-    <TileWrapper title="Focus Timer & Pomodoro" icon={Timer} badge={isRunning ? 'RUNNING' : 'PAUSED'} colSpan="col-span-12 lg:col-span-5" headerAccent="text-indigo-400" actions={
+    <TileWrapper title="Focus Timer & Pomodoro" icon={Timer} badge={isRunning ? 'RUNNING' : 'PAUSED'} colSpan="col-span-12" headerAccent="text-indigo-400" actions={
       <button onClick={() => setSettings({ ...settings, soundEnabled: !settings.soundEnabled })} className="p-1 rounded bg-slate-900/60 text-slate-400 hover:text-cyan-400">
         {settings.soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-cyan-400" /> : <VolumeX className="w-3.5 h-3.5" />}
       </button>
@@ -908,7 +908,7 @@ function AiResearchTile() {
   };
 
   return (
-    <TileWrapper title="GenAI Architecture & Breakdown" icon={Sparkles} badge="antigravity-preview-05-2026" colSpan="col-span-12 lg:col-span-6" headerAccent="text-violet-400" actions={
+    <TileWrapper title="GenAI Architecture & Breakdown" icon={Sparkles} badge="antigravity-preview-05-2026" colSpan="col-span-12" headerAccent="text-violet-400" actions={
       !settings.apiKey && <button onClick={() => setIsApiKeyModalOpen(true)} className="flex items-center space-x-1 px-2 py-0.5 text-[11px] rounded bg-amber-500/10 text-amber-300 border border-amber-500/30"><Key className="w-3 h-3" /><span>Set Key</span></button>
     }>
       <div className="flex flex-col space-y-4" onPaste={handlePaste}>
@@ -1024,13 +1024,11 @@ function AnalyticsTile() {
 
 function BentoGrid() {
   return (
-    <main className="max-w-7xl mx-auto px-4 lg:px-8 py-6">
-      <div className="bento-container">
-        <ProjectListTile />
+    <main className="max-w-7xl mx-auto px-4 lg:px-8 py-6 space-y-6">
+      <div className="grid grid-cols-12 gap-6">
+        <AiResearchTile />
         <FocusTimerTile />
         <ContributionHeatmapTile />
-        <AiResearchTile />
-        <AnalyticsTile />
       </div>
     </main>
   );

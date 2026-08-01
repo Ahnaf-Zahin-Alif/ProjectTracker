@@ -142,7 +142,7 @@ export function AiResearchTile() {
       title="GenAI Architecture & Breakdown"
       icon={Sparkles}
       badge="antigravity-preview-05-2026"
-      colSpan="col-span-12 lg:col-span-6"
+      colSpan="col-span-12"
       headerAccent="text-violet-400"
       actions={
         !settings.apiKey && (

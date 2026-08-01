@@ -1196,13 +1196,11 @@ function AnalyticsTile() {
 
 function BentoGrid() {
   return html`
-    <main className="max-w-7xl mx-auto px-4 lg:px-8 py-6">
-      <div className="bento-container">
-        <${ProjectListTile} />
+    <main className="max-w-7xl mx-auto px-4 lg:px-8 py-6 space-y-6">
+      <div className="grid grid-cols-12 gap-6">
+        <${AiResearchTile} />
         <${FocusTimerTile} />
         <${ContributionHeatmapTile} />
-        <${AiResearchTile} />
-        <${AnalyticsTile} />
       </div>
     </main>
   `;

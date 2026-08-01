@@ -426,10 +426,34 @@ function generateFallbackBreakdown(promptText, sourceUrl) {
     updatedAt: new Date().toISOString(),
     sourceUrl: sourceUrl || null,
     tasks: [
-      { id: `task_fb_${timestamp}_1`, title: '[Architecture Phase] Setup project workspace, dependencies & environment configs', completed: false, estimatedMinutes: 45 },
-      { id: `task_fb_${timestamp}_2`, title: '[Core Engine] Build state management & primary user interface components', completed: false, estimatedMinutes: 120 },
-      { id: `task_fb_${timestamp}_3`, title: '[API Integration] Connect external API endpoints and data persistence layer', completed: false, estimatedMinutes: 90 },
-      { id: `task_fb_${timestamp}_4`, title: '[Testing & Polish] Implement unit tests, keyboard shortcuts & responsive styling', completed: false, estimatedMinutes: 60 }
+      // STEP 1: ARCHITECTURE & SETUP (5 subtasks)
+      { id: `task_fb_${timestamp}_1_1`, title: '[Architecture Phase] 1. Initialize repository, package.json dependencies & scripts', completed: false, estimatedMinutes: 20 },
+      { id: `task_fb_${timestamp}_1_2`, title: '[Architecture Phase] 2. Configure build system, Tailwind CSS & global style tokens', completed: false, estimatedMinutes: 25 },
+      { id: `task_fb_${timestamp}_1_3`, title: '[Architecture Phase] 3. Setup core project folder structure & context state providers', completed: false, estimatedMinutes: 30 },
+      { id: `task_fb_${timestamp}_1_4`, title: '[Architecture Phase] 4. Define data model schemas, state types & local storage keys', completed: false, estimatedMinutes: 25 },
+      { id: `task_fb_${timestamp}_1_5`, title: '[Architecture Phase] 5. Setup environment variables & API client configurations', completed: false, estimatedMinutes: 15 },
+
+      // STEP 2: CORE ENGINE & UI COMPONENTS (6 subtasks)
+      { id: `task_fb_${timestamp}_2_1`, title: '[Core Engine] 1. Build main responsive layout container, header & brand logo', completed: false, estimatedMinutes: 35 },
+      { id: `task_fb_${timestamp}_2_2`, title: '[Core Engine] 2. Construct primary workspace grid panels & tile wrappers', completed: false, estimatedMinutes: 45 },
+      { id: `task_fb_${timestamp}_2_3`, title: '[Core Engine] 3. Build interactive focus timer widget & circular progress gauge', completed: false, estimatedMinutes: 50 },
+      { id: `task_fb_${timestamp}_2_4`, title: '[Core Engine] 4. Create subtask checklist manager with CRUD & status toggles', completed: false, estimatedMinutes: 40 },
+      { id: `task_fb_${timestamp}_2_5`, title: '[Core Engine] 5. Implement 365-day heatmap grid & streak calculation engine', completed: false, estimatedMinutes: 45 },
+      { id: `task_fb_${timestamp}_2_6`, title: '[Core Engine] 6. Add modal overlays for new project creation & API settings', completed: false, estimatedMinutes: 35 },
+
+      // STEP 3: API INTEGRATION & PERSISTENCE (5 subtasks)
+      { id: `task_fb_${timestamp}_3_1`, title: '[API Integration] 1. Connect LocalStorage service for real-time state persistence', completed: false, estimatedMinutes: 30 },
+      { id: `task_fb_${timestamp}_3_2`, title: '[API Integration] 2. Setup Google Generative AI (@google/genai) SDK model client', completed: false, estimatedMinutes: 40 },
+      { id: `task_fb_${timestamp}_3_3`, title: '[API Integration] 3. Implement image upload, drag & drop, and Ctrl+V paste listeners', completed: false, estimatedMinutes: 45 },
+      { id: `task_fb_${timestamp}_3_4`, title: '[API Integration] 4. Connect Web Search & URL grounding context tools', completed: false, estimatedMinutes: 50 },
+      { id: `task_fb_${timestamp}_3_5`, title: '[API Integration] 5. Build export/import JSON backup data handlers', completed: false, estimatedMinutes: 30 },
+
+      // STEP 4: TESTING, POLISH & PRODUCTION DEPLOY (5 subtasks)
+      { id: `task_fb_${timestamp}_4_1`, title: '[Testing & Polish] 1. Audit cross-browser responsiveness & dark theme contrast', completed: false, estimatedMinutes: 30 },
+      { id: `task_fb_${timestamp}_4_2`, title: '[Testing & Polish] 2. Implement keyboard shortcuts (Ctrl+K Command Palette)', completed: false, estimatedMinutes: 25 },
+      { id: `task_fb_${timestamp}_4_3`, title: '[Testing & Polish] 3. Add sound triggers & toast notification banners', completed: false, estimatedMinutes: 20 },
+      { id: `task_fb_${timestamp}_4_4`, title: '[Testing & Polish] 4. Execute production build validation (npm run build)', completed: false, estimatedMinutes: 15 },
+      { id: `task_fb_${timestamp}_4_5`, title: '[Testing & Polish] 5. Stage, commit to GitHub & trigger automatic Vercel deploy', completed: false, estimatedMinutes: 15 }
     ]
   };
 }

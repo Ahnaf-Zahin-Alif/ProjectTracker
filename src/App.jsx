@@ -7,11 +7,12 @@ import {
   ChevronRight, Pause, RotateCcw, Timer, Coffee, Volume2, VolumeX, 
   Target, Info, Bot, Globe, PlusCircle, Loader2, BarChart3, TrendingUp, 
   Award, PieChart, FileText, Save, X, ArrowRight, Instagram, Facebook, 
-  Youtube, ShieldCheck, LayoutDashboard, Kanban 
+  Youtube, ShieldCheck, LayoutDashboard, Kanban, FilePlus, Grid 
 } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
 import { KanbanBoardPage } from './components/pages/KanbanBoardPage';
 import { ProjectWorkspacesPage } from './components/pages/ProjectWorkspacesPage';
+import { BlankPage } from './components/pages/BlankPage';
 
 /* ==========================================================================
    1. DATE & TIME UTILITIES
@@ -449,6 +450,8 @@ export function AppStateProvider({ children }) {
   const [isRunning, setIsRunning] = useState(false);
   const [elapsedSessionSeconds, setElapsedSessionSeconds] = useState(0);
 
+  const [currentView, setCurrentView] = useState('page1');
+
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isReelModalOpen, setIsReelModalOpen] = useState(false);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
@@ -585,6 +588,7 @@ export function AppStateProvider({ children }) {
     <AppStateContext.Provider
       value={{
         projects, activeProjectId, setActiveProjectId, heatmap, settings, setSettings, notes, setNotes,
+        currentView, setCurrentView,
         timerMode, timerSeconds, isRunning, elapsedSessionSeconds, startTimer, pauseTimer, resetTimer,
         addProject, deleteProject, toggleTaskCompletion, addTaskToProject,
         isCommandPaletteOpen, setIsCommandPaletteOpen, isReelModalOpen, setIsReelModalOpen,
@@ -635,42 +639,30 @@ function Header() {
             </div>
           </div>
 
-          {/* Navigation View Switcher Tabs */}
+          {/* Navigation Page Switcher Tabs */}
           <nav className="flex items-center space-x-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
             <button
-              onClick={() => setCurrentView('dashboard')}
-              className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                currentView === 'dashboard'
+              onClick={() => setCurrentView('page1')}
+              className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+                currentView === 'page1' || currentView === 'dashboard'
                   ? 'bg-gradient-to-r from-cyan-500 to-violet-600 text-white shadow-md shadow-cyan-500/10'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
               }`}
             >
               <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>Dashboard</span>
+              <span>Page 1 (Dashboard)</span>
             </button>
 
             <button
-              onClick={() => setCurrentView('workspaces')}
-              className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                currentView === 'workspaces'
+              onClick={() => setCurrentView('page2')}
+              className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+                currentView === 'page2'
                   ? 'bg-gradient-to-r from-cyan-500 to-violet-600 text-white shadow-md shadow-cyan-500/10'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
               }`}
             >
-              <FolderKanban className="w-3.5 h-3.5" />
-              <span>Workspaces (Twin-Tile)</span>
-            </button>
-
-            <button
-              onClick={() => setCurrentView('kanban')}
-              className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                currentView === 'kanban'
-                  ? 'bg-gradient-to-r from-cyan-500 to-violet-600 text-white shadow-md shadow-cyan-500/10'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-              }`}
-            >
-              <Kanban className="w-3.5 h-3.5" />
-              <span>Kanban Board</span>
+              <FilePlus className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Page 2 (Blank Canvas)</span>
             </button>
           </nav>
         </div>
@@ -1473,7 +1465,9 @@ function AppContent() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-slate-950">
       <Header />
-      {currentView === 'workspaces' ? (
+      {currentView === 'page2' ? (
+        <BlankPage />
+      ) : currentView === 'workspaces' ? (
         <ProjectWorkspacesPage />
       ) : currentView === 'kanban' ? (
         <KanbanBoardPage />

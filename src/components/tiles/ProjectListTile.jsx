@@ -13,7 +13,8 @@ import {
   Tag, 
   ChevronRight,
   Sparkles,
-  Kanban
+  Kanban,
+  ListTodo
 } from 'lucide-react';
 import { formatMinutesToHours } from '../../utils/dateUtils';
 
@@ -190,6 +191,18 @@ export function ProjectListTile() {
                         />
                       </div>
                     </div>
+
+                    {/* Show Tasks Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedProjectId(isExpanded ? null : proj.id);
+                      }}
+                      className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-500/30 text-xs font-semibold transition"
+                    >
+                      <ListTodo className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>{isExpanded ? 'Hide Tasks' : `Show Subtasks (${totalTasks})`}</span>
+                    </button>
 
                     {/* Quick Timer Start Button */}
                     <button

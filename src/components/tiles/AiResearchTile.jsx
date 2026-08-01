@@ -26,6 +26,7 @@ export function AiResearchTile() {
 
   const [promptText, setPromptText] = useState('');
   const [projectType, setProjectType] = useState('academic'); // 'academic' | 'learning'
+  const [preferredTechStack, setPreferredTechStack] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [selectedImage, setSelectedImage] = useState(null); // { name, dataUrl }
   const [isLoading, setIsLoading] = useState(false);
@@ -74,7 +75,8 @@ export function AiResearchTile() {
         apiKey: settings.apiKey,
         sourceUrl: sourceUrl.trim() || null,
         imageDataUrl: selectedImage ? selectedImage.dataUrl : null,
-        projectType
+        projectType,
+        preferredTechStack: preferredTechStack.trim() || null
       });
 
       setGeneratedResult(result);
@@ -210,6 +212,20 @@ export function AiResearchTile() {
                 <span>💡 Learning Project</span>
               </button>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 mb-1">
+              Which tech stack combination do you want to use? (Optional)
+            </label>
+            <input
+              type="text"
+              placeholder="e.g., React, Node.js, PostgreSQL, Tailwind CSS, Python..."
+              value={preferredTechStack}
+              onChange={(e) => setPreferredTechStack(e.target.value)}
+              className="glass-input text-xs w-full font-mono bg-slate-900"
+              disabled={isLoading}
+            />
           </div>
 
           <div>

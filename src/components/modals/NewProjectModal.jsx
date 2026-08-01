@@ -10,7 +10,7 @@ export function NewProjectModal() {
   const [projectType, setProjectType] = useState('academic'); // 'academic' | 'learning'
   const [category, setCategory] = useState('Web Dev');
   const [targetHours, setTargetHours] = useState(10);
-  const [tagsInput, setTagsInput] = useState('React, Tailwind');
+  const [tagsInput, setTagsInput] = useState('');
   const [initialTaskInput, setInitialTaskInput] = useState('');
   const [imageUrl, setImageUrl] = useState(null);
 
@@ -227,13 +227,15 @@ export function NewProjectModal() {
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-300 mb-1">Tags (Comma-separated)</label>
+            <label className="block font-semibold text-slate-300 mb-1">
+              Which tech stack combination do you want to use?
+            </label>
             <input
               type="text"
-              placeholder="React, TypeScript, Tailwind, Node"
+              placeholder="e.g., React, Node.js, PostgreSQL, Tailwind CSS, Python..."
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
-              className="glass-input w-full text-xs"
+              className="glass-input w-full text-xs font-mono"
             />
           </div>
 

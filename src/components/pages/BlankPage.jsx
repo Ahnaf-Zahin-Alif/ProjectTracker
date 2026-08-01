@@ -57,6 +57,7 @@ export function BlankPage() {
 
   const [activeTab, setActiveTab] = useState('projects'); // 'projects' | 'dashboard' | 'kanban' | 'notes'
   const [selectedDashboardProjId, setSelectedDashboardProjId] = useState(() => activeProjectId || projects[0]?.id || null);
+  const [expandedTasksMap, setExpandedTasksMap] = useState({});
 
   const [selectedProjectId, setSelectedProjectId] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -311,7 +312,15 @@ export function BlankPage() {
                       </div>
 
                       {/* Project Controls */}
-                      <div className="flex items-center space-x-3 flex-shrink-0">
+                      <div className="flex items-center space-x-2.5 flex-shrink-0">
+                        <button
+                          onClick={() => setExpandedTasksMap(prev => ({ ...prev, [proj.id]: prev[proj.id] === false ? true : false }))}
+                          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-500/30 text-xs font-semibold transition"
+                        >
+                          <ListTodo className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>{expandedTasksMap[proj.id] === false ? `Show Subtasks & Main Tasks (${totalTasks})` : 'Hide Tasks'}</span>
+                        </button>
+
                         <button
                           onClick={() => {
                             setSelectedDashboardProjId(proj.id);
@@ -320,7 +329,7 @@ export function BlankPage() {
                           className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-500/30 text-xs font-semibold transition"
                         >
                           <BarChart3 className="w-3.5 h-3.5" />
-                          <span>Open Dedicated Dashboard</span>
+                          <span>Dashboard</span>
                         </button>
 
                         <button
@@ -346,65 +355,71 @@ export function BlankPage() {
                     </div>
 
                     {/* Progress Bar & Listed Tasks */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
-                        <span>Tasks List ({completedTasks}/{totalTasks} Completed)</span>
-                        <span className="text-cyan-400 font-mono">{percentDone}% Done • {formatMinutesToHours(loggedMinutes)} / {proj.targetHours}h Logged</span>
-                      </div>
+                    {expandedTasksMap[proj.id] !== false && (
+                      <div className="space-y-3 pt-2 border-t border-slate-800/80 animate-in fade-in duration-150">
+                        <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
+                          <span className="flex items-center space-x-1.5">
+                            <ListTodo className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>Main Tasks & Subtasks Breakdown ({completedTasks}/{totalTasks} Completed)</span>
+                          </span>
+                          <span className="text-cyan-400 font-mono">{percentDone}% Done • {formatMinutesToHours(loggedMinutes)} / {proj.targetHours}h Logged</span>
+                        </div>
 
-                      {/* Inline Task Add Form */}
-                      <form onSubmit={(e) => handleAddInlineTask(proj.id, e)} className="flex items-center space-x-2">
-                        <input
-                          type="text"
-                          placeholder="+ Add new subtask to this project..."
-                          value={newTaskInput[proj.id] || ''}
-                          onChange={(e) => setNewTaskInput({ ...newTaskInput, [proj.id]: e.target.value })}
-                          className="glass-input text-xs flex-1 bg-slate-950 py-1.5"
-                        />
-                        <button type="submit" className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold">
-                          Add Task
-                        </button>
-                      </form>
+                        {/* Inline Task Add Form */}
+                        <form onSubmit={(e) => handleAddInlineTask(proj.id, e)} className="flex items-center space-x-2">
+                          <input
+                            type="text"
+                            placeholder="+ Add new subtask to this project..."
+                            value={newTaskInput[proj.id] || ''}
+                            onChange={(e) => setNewTaskInput({ ...newTaskInput, [proj.id]: e.target.value })}
+                            className="glass-input text-xs flex-1 bg-slate-950 py-1.5"
+                          />
+                          <button type="submit" className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold">
+                            Add Task
+                          </button>
+                        </form>
 
-                      {/* Task Items List */}
-                      <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
-                        {proj.tasks?.map(task => (
-                          <div 
-                            key={task.id} 
-                            onClick={() => toggleTaskCompletion(proj.id, task.id)}
-                            className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 cursor-pointer transition"
-                          >
-                            <div className="flex items-center space-x-2.5">
-                              {task.completed ? (
-                                <CheckSquare className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                              ) : (
-                                <Square className="w-4 h-4 text-slate-500 flex-shrink-0" />
-                              )}
-                              <span className={`text-xs font-medium ${task.completed ? 'line-through text-slate-500' : 'text-slate-200'}`}>
-                                {task.title}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center space-x-2">
-                              {task.estimatedMinutes && (
-                                <span className="text-[10px] font-mono text-cyan-400 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
-                                  ~{task.estimatedMinutes}m
+                        {/* Task Items List */}
+                        <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+                          {proj.tasks?.map(task => (
+                            <div 
+                              key={task.id} 
+                              onClick={() => toggleTaskCompletion(proj.id, task.id)}
+                              className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 cursor-pointer transition"
+                            >
+                              <div className="flex items-center space-x-2.5">
+                                {task.completed ? (
+                                  <CheckSquare className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                                ) : (
+                                  <Square className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                                )}
+                                <span className={`text-xs font-medium ${task.completed ? 'line-through text-slate-500' : 'text-slate-200'}`}>
+                                  {task.title}
                                 </span>
-                              )}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteTaskFromProject(proj.id, task.id);
-                                }}
-                                className="text-slate-600 hover:text-rose-400 p-1"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                              </div>
+
+                              <div className="flex items-center space-x-2">
+                                {task.estimatedMinutes && (
+                                  <span className="text-[10px] font-mono text-cyan-400 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
+                                    ~{task.estimatedMinutes}m
+                                  </span>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteTaskFromProject(proj.id, task.id);
+                                  }}
+                                  className="text-slate-600 hover:text-rose-400 p-1"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                   </div>
                 );

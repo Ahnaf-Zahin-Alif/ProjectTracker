@@ -34,7 +34,7 @@ export function deriveCleanProjectTitle(promptText, sourceUrl = null, hasImage =
   return p;
 }
 
-export async function generateProjectBreakdown({ promptText, apiKey, sourceUrl = null, imageDataUrl = null, projectType = 'learning' }) {
+export async function generateProjectBreakdown({ promptText, apiKey, sourceUrl = null, imageDataUrl = null, projectType = 'learning', preferredTechStack = null }) {
   const activeKey = apiKey || (import.meta.env ? import.meta.env.VITE_GEMINI_API_KEY : null);
 
   if (activeKey && activeKey.trim() !== '') {
@@ -46,6 +46,9 @@ Your goal is to research GitHub repositories, technical documentation, design mo
 Always break down the project into 4 core architectural milestones, and generate 5 to 10 detailed, actionable subtasks for EACH milestone (with estimated minutes for each subtask). Output pure valid JSON adhering strictly to the responseSchema.`;
 
       let fullPrompt = `Analyze the following project idea, design image, or video link and break it down into 4 milestones with 5 to 10 actionable subtasks for each step:\n\nProject Prompt: ${promptText}`;
+      if (preferredTechStack && preferredTechStack.trim() !== '') {
+        fullPrompt += `\n\nUser Preferred Tech Stack Combination: ${preferredTechStack.trim()}`;
+      }
       if (sourceUrl) {
         fullPrompt += `\n\nReference URL / Reel Link: ${sourceUrl}`;
       }
@@ -110,7 +113,7 @@ Always break down the project into 4 core architectural milestones, and generate
 
       if (response && response.text) {
         const parsed = JSON.parse(response.text);
-        return formatGenAiResponse(parsed, sourceUrl, imageDataUrl, promptText, projectType);
+        return formatGenAiResponse(parsed, sourceUrl, imageDataUrl, promptText, projectType, preferredTechStack);
       }
     } catch (err) {
       console.warn('Real Gemini API call encountered an issue, seamlessly switching to intelligent fallback generator:', err);
@@ -118,10 +121,10 @@ Always break down the project into 4 core architectural milestones, and generate
   }
 
   // Fallback / Offline Generator
-  return generateFallbackBreakdown(promptText, sourceUrl, imageDataUrl, projectType);
+  return generateFallbackBreakdown(promptText, sourceUrl, imageDataUrl, projectType, preferredTechStack);
 }
 
-function formatGenAiResponse(rawJson, sourceUrl, imageDataUrl = null, originalPrompt = '', projectType = 'learning') {
+function formatGenAiResponse(rawJson, sourceUrl, imageDataUrl = null, originalPrompt = '', projectType = 'learning', preferredTechStack = null) {
   const allTasks = [];
   let taskIdCounter = 1;
 
@@ -141,6 +144,13 @@ function formatGenAiResponse(rawJson, sourceUrl, imageDataUrl = null, originalPr
   }
 
   const cleanTitle = deriveCleanProjectTitle(rawJson.title || originalPrompt, sourceUrl, !!imageDataUrl);
+  
+  let userTags = [];
+  if (preferredTechStack && preferredTechStack.trim() !== '') {
+    userTags = preferredTechStack.split(/[,+]/).map(t => t.trim()).filter(Boolean);
+  } else if (Array.isArray(rawJson.tags)) {
+    userTags = rawJson.tags;
+  }
 
   return {
     id: `proj_ai_${Date.now()}`,
@@ -149,7 +159,7 @@ function formatGenAiResponse(rawJson, sourceUrl, imageDataUrl = null, originalPr
     category: rawJson.category || 'Web App',
     projectType: projectType || 'learning',
     status: 'in-progress',
-    tags: Array.isArray(rawJson.tags) ? rawJson.tags : ['React', 'AI', 'Node'],
+    tags: userTags,
     targetHours: rawJson.targetHours || 12,
     loggedMinutes: 0,
     createdAt: new Date().toISOString(),
@@ -163,26 +173,27 @@ function formatGenAiResponse(rawJson, sourceUrl, imageDataUrl = null, originalPr
 /**
  * Generates an intelligent, context-aware project breakdown offline/without API key
  */
-function generateFallbackBreakdown(promptText, sourceUrl, imageDataUrl = null, projectType = 'learning') {
+function generateFallbackBreakdown(promptText, sourceUrl, imageDataUrl = null, projectType = 'learning', preferredTechStack = null) {
   const cleanPrompt = promptText.trim();
   const timestamp = Date.now();
 
   let category = 'Web Dev';
-  let tags = ['React', 'Node.js', 'Tailwind', 'AI'];
   let targetHours = 10;
+  let tags = [];
 
-  if (cleanPrompt.toLowerCase().includes('reel') || cleanPrompt.toLowerCase().includes('instagram') || sourceUrl) {
-    category = 'Social Media / Reel Project';
-    tags = ['Social API', 'Media Processing', 'React', 'Vite'];
-    targetHours = 12;
-  } else if (cleanPrompt.toLowerCase().includes('python') || cleanPrompt.toLowerCase().includes('data')) {
-    category = 'Data & AI';
-    tags = ['Python', 'FastAPI', 'Pandas', 'Gemini'];
-    targetHours = 15;
-  } else if (cleanPrompt.toLowerCase().includes('mobile') || cleanPrompt.toLowerCase().includes('flutter')) {
-    category = 'Mobile App';
-    tags = ['React Native', 'Mobile UI', 'AsyncStorage'];
-    targetHours = 20;
+  if (preferredTechStack && preferredTechStack.trim() !== '') {
+    tags = preferredTechStack.split(/[,+]/).map(t => t.trim()).filter(Boolean);
+  } else {
+    if (cleanPrompt.toLowerCase().includes('reel') || cleanPrompt.toLowerCase().includes('instagram') || sourceUrl) {
+      category = 'Social Media / Reel Project';
+      targetHours = 12;
+    } else if (cleanPrompt.toLowerCase().includes('python') || cleanPrompt.toLowerCase().includes('data')) {
+      category = 'Data & AI';
+      targetHours = 15;
+    } else if (cleanPrompt.toLowerCase().includes('mobile') || cleanPrompt.toLowerCase().includes('flutter')) {
+      category = 'Mobile App';
+      targetHours = 20;
+    }
   }
 
   const cleanTitle = deriveCleanProjectTitle(cleanPrompt, sourceUrl, !!imageDataUrl);

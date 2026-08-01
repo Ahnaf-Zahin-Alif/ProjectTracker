@@ -25,7 +25,7 @@ export function AppStateProvider({ children }) {
   const [elapsedSessionSeconds, setElapsedSessionSeconds] = useState(0);
 
   // 6. Modals & Overlays State
-  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'kanban'
+  const [currentView, setCurrentView] = useState('page1'); // 'page1' | 'page2' | 'workspaces' | 'kanban'
   const [selectedKanbanProjectId, setSelectedKanbanProjectId] = useState('all');
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isReelModalOpen, setIsReelModalOpen] = useState(false);

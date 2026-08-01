@@ -658,11 +658,7 @@ function Header() {
               <${Zap} className="w-5 h-5 text-white animate-pulse" />
             </div>
             <div>
-              <div className="flex items-center space-x-2">
-                <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-cyan-400 via-teal-200 to-violet-400 bg-clip-text text-transparent">ANTIGRAVITY</span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">v2026.5</span>
-              </div>
-              <p className="text-xs text-slate-400 font-medium">Project Manager</p>
+              <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-cyan-400 via-teal-200 to-violet-400 bg-clip-text text-transparent">ProjectManager</span>
             </div>
           </div>
           <button onClick=${() => setIsCommandPaletteOpen(true)} className="md:hidden p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">

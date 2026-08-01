@@ -1169,6 +1169,7 @@ function NewProjectModal() {
   const { isNewProjectModalOpen, setIsNewProjectModalOpen, addProject } = useAppState();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [projectType, setProjectType] = useState('academic'); // 'academic' | 'learning'
   const [category, setCategory] = useState('Web Dev');
   const [targetHours, setTargetHours] = useState(10);
   const [tagsInput, setTagsInput] = useState('React, Tailwind');
@@ -1199,6 +1200,7 @@ function NewProjectModal() {
       title: title.trim(),
       description: description.trim(),
       category,
+      projectType,
       status: 'in-progress',
       tags,
       targetHours: Number(targetHours) || 10,
@@ -1206,11 +1208,11 @@ function NewProjectModal() {
       imageUrl: imageUrl || null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      tasks: initialTasks.length > 0 ? initialTasks : [{ id: `task_default_${Date.now()}`, title: 'Setup project workspace and specs', completed: false, estimatedMinutes: 30 }]
+      tasks: initialTasks
     });
 
     setIsNewProjectModalOpen(false);
-    setTitle(''); setDescription(''); setTagsInput('React, Tailwind'); setInitialTaskInput(''); setImageUrl(null);
+    setTitle(''); setDescription(''); setProjectType('academic'); setTagsInput('React, Tailwind'); setInitialTaskInput(''); setImageUrl(null);
   };
 
   return (
@@ -1226,6 +1228,19 @@ function NewProjectModal() {
 
         <form onSubmit={handleSubmit} className="space-y-3 text-xs">
           <div><label className="block font-semibold text-slate-300 mb-1">Project Title</label><input type="text" required placeholder="e.g. Fullstack Realtime Chat App" value={title} onChange={(e) => setTitle(e.target.value)} className="glass-input w-full text-xs" /></div>
+          
+          <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1 text-xs">
+            <label className="block font-semibold text-slate-300">Project Type <span className="text-cyan-400 font-normal">(Select Academic or Learning)</span></label>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => setProjectType('academic')} className={`flex items-center justify-center space-x-1.5 py-1.5 px-3 rounded-lg border text-xs font-semibold transition ${projectType === 'academic' ? 'bg-violet-600/25 text-violet-300 border-violet-500 shadow-md shadow-violet-500/20' : 'bg-slate-900 text-slate-400 border-slate-800'}`}>
+                <span>🎓 Academic Project</span>
+              </button>
+              <button type="button" onClick={() => setProjectType('learning')} className={`flex items-center justify-center space-x-1.5 py-1.5 px-3 rounded-lg border text-xs font-semibold transition ${projectType === 'learning' ? 'bg-cyan-600/25 text-cyan-300 border-cyan-500 shadow-md shadow-cyan-500/20' : 'bg-slate-900 text-slate-400 border-slate-800'}`}>
+                <span>💡 Learning Project</span>
+              </button>
+            </div>
+          </div>
+
           <div><label className="block font-semibold text-slate-300 mb-1">Description</label><textarea rows={2} placeholder="Brief overview..." value={description} onChange={(e) => setDescription(e.target.value)} className="glass-input w-full text-xs resize-none" /></div>
 
           {/* Image Upload Option */}

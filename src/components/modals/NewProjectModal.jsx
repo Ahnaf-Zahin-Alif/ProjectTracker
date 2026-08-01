@@ -1,12 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { useAppState } from '../../context/AppStateContext';
-import { Plus, X, FolderKanban, UploadCloud, Image as ImageIcon } from 'lucide-react';
+import { Plus, X, FolderKanban, UploadCloud, Image as ImageIcon, GraduationCap, Lightbulb } from 'lucide-react';
 
 export function NewProjectModal() {
   const { isNewProjectModalOpen, setIsNewProjectModalOpen, addProject, showToast } = useAppState();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [projectType, setProjectType] = useState('academic'); // 'academic' | 'learning'
   const [category, setCategory] = useState('Web Dev');
   const [targetHours, setTargetHours] = useState(10);
   const [tagsInput, setTagsInput] = useState('React, Tailwind');
@@ -53,6 +54,7 @@ export function NewProjectModal() {
       title: title.trim(),
       description: description.trim(),
       category,
+      projectType, // 'academic' | 'learning'
       status: 'in-progress',
       tags,
       targetHours: Number(targetHours) || 10,
@@ -60,15 +62,14 @@ export function NewProjectModal() {
       imageUrl: imageUrl || null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      tasks: initialTasks.length > 0 ? initialTasks : [
-        { id: `task_default_${Date.now()}`, title: 'Setup project workspace and specs', completed: false, estimatedMinutes: 30 }
-      ]
+      tasks: initialTasks
     };
 
     addProject(newProj);
     setIsNewProjectModalOpen(false);
     setTitle('');
     setDescription('');
+    setProjectType('academic');
     setTagsInput('React, Tailwind');
     setInitialTaskInput('');
     setImageUrl(null);
@@ -102,7 +103,7 @@ export function NewProjectModal() {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3 text-xs">
+        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
           <div>
             <label className="block font-semibold text-slate-300 mb-1">Project Title</label>
             <input
@@ -113,6 +114,40 @@ export function NewProjectModal() {
               onChange={(e) => setTitle(e.target.value)}
               className="glass-input w-full text-xs"
             />
+          </div>
+
+          {/* PROJECT TYPE SELECTOR (Academic Project vs Learning Project) */}
+          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
+            <label className="block font-bold text-slate-200">
+              Project Type <span className="text-cyan-400 font-normal">(Select Academic or Learning)</span>
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setProjectType('academic')}
+                className={`flex items-center justify-center space-x-2 py-2 px-3 rounded-xl border text-xs font-semibold transition ${
+                  projectType === 'academic'
+                    ? 'bg-violet-600/25 text-violet-300 border-violet-500 shadow-md shadow-violet-500/20'
+                    : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+                }`}
+              >
+                <GraduationCap className="w-4 h-4 text-violet-400" />
+                <span>🎓 Academic Project</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setProjectType('learning')}
+                className={`flex items-center justify-center space-x-2 py-2 px-3 rounded-xl border text-xs font-semibold transition ${
+                  projectType === 'learning'
+                    ? 'bg-cyan-600/25 text-cyan-300 border-cyan-500 shadow-md shadow-cyan-500/20'
+                    : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+                }`}
+              >
+                <Lightbulb className="w-4 h-4 text-cyan-400" />
+                <span>💡 Learning Project</span>
+              </button>
+            </div>
           </div>
 
           <div>
@@ -203,10 +238,10 @@ export function NewProjectModal() {
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-300 mb-1">Initial Subtasks (One per line)</label>
+            <label className="block font-semibold text-slate-300 mb-1">Initial Subtasks (One per line - optional)</label>
             <textarea
-              rows={3}
-              placeholder="Setup repo and environment&#10;Implement core auth endpoints&#10;Deploy initial staging build"
+              rows={2}
+              placeholder="Custom subtasks (Leave empty to generate 21 step-by-step subtasks automatically)"
               value={initialTaskInput}
               onChange={(e) => setInitialTaskInput(e.target.value)}
               className="glass-input w-full text-xs font-mono"
@@ -217,7 +252,7 @@ export function NewProjectModal() {
             type="submit"
             className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition shadow-lg shadow-cyan-500/20"
           >
-            Create Project
+            Create Project ({projectType === 'academic' ? '🎓 Academic' : '💡 Learning'})
           </button>
         </form>
 

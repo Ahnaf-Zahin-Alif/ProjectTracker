@@ -6,8 +6,35 @@ import { GoogleGenAI } from '@google/genai';
  * Tools: google_search, url_context
  */
 
-export async function generateProjectBreakdown({ promptText, apiKey, sourceUrl = null, imageDataUrl = null }) {
-  // If user provided a custom API Key or if VITE_GEMINI_API_KEY environment variable is present
+export function deriveCleanProjectTitle(promptText, sourceUrl = null, hasImage = false) {
+  if (!promptText) {
+    if (hasImage) return 'Visual UI Mockup Application';
+    if (sourceUrl) return 'Web Reference Application';
+    return 'Developer Project Workspace';
+  }
+
+  const p = promptText.trim();
+
+  // Handle internal default fallback prompts
+  if (p.toLowerCase().includes('build and architect developer project from attached')) {
+    return 'UI Mockup Component Application';
+  }
+
+  if (p.length > 42) {
+    const firstSentence = p.split('.')[0];
+    if (firstSentence.length <= 42) return firstSentence.trim();
+    
+    const words = p.split(' ');
+    if (words.length > 5) {
+      return words.slice(0, 5).join(' ').replace(/[^\w\s-]/gi, '').trim() + '...';
+    }
+    return p.substring(0, 42).trim() + '...';
+  }
+
+  return p;
+}
+
+export async function generateProjectBreakdown({ promptText, apiKey, sourceUrl = null, imageDataUrl = null, projectType = 'learning' }) {
   const activeKey = apiKey || (import.meta.env ? import.meta.env.VITE_GEMINI_API_KEY : null);
 
   if (activeKey && activeKey.trim() !== '') {
@@ -83,18 +110,18 @@ Always break down the project into 4 core architectural milestones, and generate
 
       if (response && response.text) {
         const parsed = JSON.parse(response.text);
-        return formatGenAiResponse(parsed, sourceUrl, imageDataUrl);
+        return formatGenAiResponse(parsed, sourceUrl, imageDataUrl, promptText, projectType);
       }
     } catch (err) {
       console.warn('Real Gemini API call encountered an issue, seamlessly switching to intelligent fallback generator:', err);
     }
   }
 
-  // Fallback / Offline / Pre-configured Generator
-  return generateFallbackBreakdown(promptText, sourceUrl, imageDataUrl);
+  // Fallback / Offline Generator
+  return generateFallbackBreakdown(promptText, sourceUrl, imageDataUrl, projectType);
 }
 
-function formatGenAiResponse(rawJson, sourceUrl, imageDataUrl = null) {
+function formatGenAiResponse(rawJson, sourceUrl, imageDataUrl = null, originalPrompt = '', projectType = 'learning') {
   const allTasks = [];
   let taskIdCounter = 1;
 
@@ -113,11 +140,14 @@ function formatGenAiResponse(rawJson, sourceUrl, imageDataUrl = null) {
     });
   }
 
+  const cleanTitle = deriveCleanProjectTitle(rawJson.title || originalPrompt, sourceUrl, !!imageDataUrl);
+
   return {
     id: `proj_ai_${Date.now()}`,
-    title: rawJson.title || 'AI Research Generated Project',
-    description: rawJson.description || 'Generated task breakdown from web search and GitHub research.',
+    title: cleanTitle,
+    description: rawJson.description || `Task breakdown for ${cleanTitle} from AI research.`,
     category: rawJson.category || 'Web App',
+    projectType: projectType || 'learning',
     status: 'in-progress',
     tags: Array.isArray(rawJson.tags) ? rawJson.tags : ['React', 'AI', 'Node'],
     targetHours: rawJson.targetHours || 12,
@@ -126,18 +156,14 @@ function formatGenAiResponse(rawJson, sourceUrl, imageDataUrl = null) {
     updatedAt: new Date().toISOString(),
     sourceUrl: sourceUrl || null,
     imageUrl: imageDataUrl || null,
-    tasks: allTasks.length > 0 ? allTasks : [
-      { id: `task_1`, title: 'Setup project architecture and repository', completed: false, estimatedMinutes: 30 },
-      { id: `task_2`, title: 'Implement core application features', completed: false, estimatedMinutes: 120 },
-      { id: `task_3`, title: 'Conduct automated testing & deploy', completed: false, estimatedMinutes: 60 }
-    ]
+    tasks: allTasks
   };
 }
 
 /**
  * Generates an intelligent, context-aware project breakdown offline/without API key
  */
-function generateFallbackBreakdown(promptText, sourceUrl, imageDataUrl = null) {
+function generateFallbackBreakdown(promptText, sourceUrl, imageDataUrl = null, projectType = 'learning') {
   const cleanPrompt = promptText.trim();
   const timestamp = Date.now();
 
@@ -159,11 +185,17 @@ function generateFallbackBreakdown(promptText, sourceUrl, imageDataUrl = null) {
     targetHours = 20;
   }
 
+  const cleanTitle = deriveCleanProjectTitle(cleanPrompt, sourceUrl, !!imageDataUrl);
+  const cleanDescription = (cleanPrompt && !cleanPrompt.toLowerCase().includes('build and architect developer project from attached'))
+    ? `Grounding search breakdown: Researched web & GitHub trends for "${cleanPrompt}".`
+    : `Architecture breakdown and step-by-step development roadmap for ${cleanTitle}.`;
+
   return {
     id: `proj_ai_${timestamp}`,
-    title: cleanPrompt.length > 50 ? cleanPrompt.substring(0, 50) + '...' : cleanPrompt,
-    description: `Grounding search breakdown (antigravity-preview-05-2026): Researched web & GitHub trends for "${cleanPrompt}".`,
+    title: cleanTitle,
+    description: cleanDescription,
     category,
+    projectType: projectType || 'learning',
     status: 'in-progress',
     tags,
     targetHours,

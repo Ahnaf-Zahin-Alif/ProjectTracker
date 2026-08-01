@@ -276,6 +276,13 @@ export function BlankPage() {
                             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
                               {proj.category || 'Web Dev'}
                             </span>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                              proj.projectType === 'academic'
+                                ? 'bg-violet-950/80 text-violet-300 border-violet-700/80'
+                                : 'bg-cyan-950/80 text-cyan-300 border-cyan-700/80'
+                            }`}>
+                              {proj.projectType === 'academic' ? '🎓 Academic' : '💡 Learning'}
+                            </span>
                             <h4 className="font-bold text-slate-100 text-base">{proj.title}</h4>
                             <span className={`px-2 py-0.5 rounded text-[10px] font-medium border ${
                               proj.status === 'completed' 

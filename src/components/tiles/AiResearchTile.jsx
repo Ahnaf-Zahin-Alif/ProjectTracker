@@ -15,7 +15,9 @@ import {
   Key,
   UploadCloud,
   X,
-  FileImage
+  FileImage,
+  GraduationCap,
+  Lightbulb
 } from 'lucide-react';
 import { generateProjectBreakdown } from '../../services/genAiService';
 
@@ -23,6 +25,7 @@ export function AiResearchTile() {
   const { addProject, settings, setIsApiKeyModalOpen, showToast } = useAppState();
 
   const [promptText, setPromptText] = useState('');
+  const [projectType, setProjectType] = useState('academic'); // 'academic' | 'learning'
   const [sourceUrl, setSourceUrl] = useState('');
   const [selectedImage, setSelectedImage] = useState(null); // { name, dataUrl }
   const [isLoading, setIsLoading] = useState(false);
@@ -59,18 +62,19 @@ export function AiResearchTile() {
 
     try {
       setTimeout(() => {
-        setLoadingStep(selectedImage ? 'Analyzing design mockup & executing google_search...' : 'Executing google_search & url_context tools on GitHub & Web...');
+        setLoadingStep(selectedImage ? 'Analyzing design mockup screenshot & executing google_search...' : 'Executing google_search & url_context tools on GitHub & Web...');
       }, 1000);
 
       setTimeout(() => {
-        setLoadingStep('Structuring task breakdown and time estimates JSON...');
+        setLoadingStep('Structuring task breakdown and 21 subtasks JSON...');
       }, 2200);
 
       const result = await generateProjectBreakdown({
         promptText: effectivePrompt,
         apiKey: settings.apiKey,
         sourceUrl: sourceUrl.trim() || null,
-        imageDataUrl: selectedImage ? selectedImage.dataUrl : null
+        imageDataUrl: selectedImage ? selectedImage.dataUrl : null,
+        projectType
       });
 
       setGeneratedResult(result);
@@ -86,7 +90,10 @@ export function AiResearchTile() {
 
   const handleImportProject = () => {
     if (!generatedResult) return;
-    addProject(generatedResult);
+    addProject({
+      ...generatedResult,
+      projectType
+    });
     setGeneratedResult(null);
     setPromptText('');
     setSourceUrl('');
@@ -95,17 +102,14 @@ export function AiResearchTile() {
 
   const handlePaste = (e) => {
     const items = e.clipboardData?.items;
-    if (!items) return;
-
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].type.startsWith('image/')) {
-        const file = items[i].getAsFile();
-        if (file) {
-          e.preventDefault();
+    if (items) {
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
           const reader = new FileReader();
           reader.onload = (evt) => {
             setSelectedImage({
-              name: file.name || `pasted-image-${Date.now()}.png`,
+              name: `pasted_image_${Date.now()}.png`,
               dataUrl: evt.target.result
             });
             showToast('📋 Image pasted from clipboard!');
@@ -174,6 +178,40 @@ export function AiResearchTile() {
             />
           </div>
 
+          {/* PROJECT TYPE TOGGLE (Academic Project vs Learning Project) */}
+          <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1 text-xs">
+            <label className="block font-semibold text-slate-300">
+              Project Type <span className="text-cyan-400 font-normal">(Academic vs Learning)</span>
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setProjectType('academic')}
+                className={`flex items-center justify-center space-x-1.5 py-1.5 px-3 rounded-lg border text-xs font-semibold transition ${
+                  projectType === 'academic'
+                    ? 'bg-violet-600/25 text-violet-300 border-violet-500 shadow-md shadow-violet-500/20'
+                    : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
+                }`}
+              >
+                <GraduationCap className="w-3.5 h-3.5 text-violet-400" />
+                <span>🎓 Academic Project</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setProjectType('learning')}
+                className={`flex items-center justify-center space-x-1.5 py-1.5 px-3 rounded-lg border text-xs font-semibold transition ${
+                  projectType === 'learning'
+                    ? 'bg-cyan-600/25 text-cyan-300 border-cyan-500 shadow-md shadow-cyan-500/20'
+                    : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
+                }`}
+              >
+                <Lightbulb className="w-3.5 h-3.5 text-cyan-400" />
+                <span>💡 Learning Project</span>
+              </button>
+            </div>
+          </div>
+
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
               <span>Reference Link / Reel URL (Optional)</span>
@@ -198,17 +236,16 @@ export function AiResearchTile() {
             {selectedImage ? (
               <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 border border-cyan-500/50">
                 <div className="flex items-center space-x-3 min-w-0">
-                  <img src={selectedImage.dataUrl} alt="Preview" className="w-12 h-12 rounded-lg object-cover border border-slate-700 flex-shrink-0" />
+                  <img src={selectedImage.dataUrl} alt="Preview" className="w-10 h-10 rounded-lg object-cover border border-cyan-500/40" />
                   <div className="min-w-0">
-                    <span className="block text-xs font-semibold text-slate-200 truncate">{selectedImage.name}</span>
-                    <span className="block text-[10px] text-cyan-400">Image attached for Gemini analysis</span>
+                    <p className="text-xs font-bold text-slate-200 truncate">{selectedImage.name}</p>
+                    <p className="text-[10px] text-cyan-400">Attached • Ready for Gemini vision analysis</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedImage(null)}
-                  className="p-1.5 text-slate-400 hover:text-rose-400 transition"
-                  title="Remove Image"
+                  className="p-1 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -218,13 +255,13 @@ export function AiResearchTile() {
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 onClick={() => imageInputRef.current?.click()}
-                className="w-full flex flex-col items-center justify-center space-y-1 py-3 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-dashed border-slate-700 text-slate-300 text-xs transition cursor-pointer"
+                className="flex flex-col items-center justify-center py-3 px-4 rounded-xl bg-slate-900/50 hover:bg-slate-900 border border-dashed border-slate-700 hover:border-cyan-500/50 cursor-pointer transition text-center group"
               >
-                <div className="flex items-center space-x-2">
-                  <UploadCloud className="w-4 h-4 text-cyan-400" />
-                  <span className="font-medium">Upload Image, Drag & Drop, or Paste (Ctrl+V)</span>
-                </div>
-                <span className="text-[10px] text-slate-500">Supports PNG, JPG, WebP screenshots</span>
+                <UploadCloud className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform mb-1" />
+                <span className="text-xs font-medium text-slate-300">
+                  <strong className="text-cyan-400">Upload Image</strong>, Drag & Drop, or Paste (<kbd className="px-1 py-0.5 rounded bg-slate-800 text-[10px] font-mono">Ctrl+V</kbd>)
+                </span>
+                <span className="text-[10px] text-slate-400 mt-0.5">Supports PNG, JPG, WebP screenshots</span>
               </div>
             )}
 
@@ -239,82 +276,70 @@ export function AiResearchTile() {
 
           <button
             type="submit"
-            disabled={isLoading || (!promptText.trim() && !sourceUrl.trim() && !selectedImage)}
-            className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 text-white font-semibold text-xs transition shadow-lg shadow-violet-600/20 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+            disabled={isLoading}
+            className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-violet-600/20 disabled:opacity-50 transition"
           >
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin text-white" />
-                <span>{loadingStep}</span>
+                <span>{loadingStep || 'Executing Grounding Tools & Vision Breakdown...'}</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4 text-cyan-200" />
-                <span>Research & Generate Structured JSON Plan</span>
+                <Sparkles className="w-4 h-4 text-violet-300" />
+                <span>Research & Generate Structured JSON Plan ({projectType === 'academic' ? '🎓 Academic' : '💡 Learning'})</span>
               </>
             )}
           </button>
         </form>
 
-        {/* Generated Structured Output Preview */}
+        {/* Results Preview Card */}
         {generatedResult && (
-          <div className="p-4 rounded-xl bg-slate-900/90 border border-cyan-500/50 space-y-3 animate-in fade-in duration-300">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-start space-x-3 min-w-0">
-                {generatedResult.imageUrl && (
-                  <img src={generatedResult.imageUrl} alt="Project Mockup" className="w-12 h-12 rounded-lg object-cover border border-slate-700 flex-shrink-0" />
-                )}
-                <div>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-                    {generatedResult.category}
-                  </span>
-                  <h4 className="font-bold text-slate-100 text-sm mt-1">{generatedResult.title}</h4>
-                  <p className="text-xs text-slate-300 mt-0.5">{generatedResult.description}</p>
-                </div>
+          <div className="p-4 rounded-2xl bg-slate-900 border border-violet-500/40 space-y-3 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-violet-500/20 text-violet-300 border border-violet-500/40">
+                  {generatedResult.category}
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                  {generatedResult.projectType === 'academic' ? '🎓 Academic' : '💡 Learning'}
+                </span>
+                <h4 className="font-bold text-slate-100 text-sm">{generatedResult.title}</h4>
               </div>
-
-              <span className="text-xs font-mono font-bold text-cyan-400 bg-slate-950 px-2 py-1 rounded border border-slate-800 flex-shrink-0">
-                ~{generatedResult.targetHours}h Target
-              </span>
+              <span className="text-xs text-slate-400 font-mono">Target ~{generatedResult.targetHours}h</span>
             </div>
 
-            {/* Tags */}
-            {generatedResult.tags && (
-              <div className="flex flex-wrap gap-1">
-                {generatedResult.tags.map((t, idx) => (
-                  <span key={idx} className="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 border border-slate-700">
-                    #{t}
-                  </span>
-                ))}
-              </div>
-            )}
+            <p className="text-xs text-slate-300 leading-relaxed">{generatedResult.description}</p>
 
-            {/* Actionable Subtask Breakdown List */}
-            <div className="space-y-1.5 pt-2 border-t border-slate-800">
-              <span className="text-xs font-semibold text-slate-400">Generated Task Breakdown:</span>
-              <div className="space-y-1 max-h-40 overflow-y-auto pr-1">
-                {generatedResult.tasks.map((task) => (
-                  <div key={task.id} className="flex items-center justify-between p-1.5 rounded bg-slate-950/60 text-xs border border-slate-800">
-                    <span className="text-slate-200 line-clamp-1">{task.title}</span>
-                    <span className="text-[10px] font-mono text-cyan-400 px-1.5 py-0.5 rounded bg-slate-900 flex-shrink-0 ml-2">
-                      ~{task.estimatedMinutes}m
-                    </span>
+            <div className="flex items-center space-x-1.5 flex-wrap gap-y-1">
+              {generatedResult.tags?.map((t, idx) => (
+                <span key={idx} className="px-2 py-0.5 rounded text-[10px] bg-slate-950 text-slate-300 border border-slate-800">
+                  #{t}
+                </span>
+              ))}
+            </div>
+
+            <div className="pt-2 border-t border-slate-800 space-y-1.5">
+              <span className="text-[11px] font-semibold text-slate-400 block">Generated Subtasks Roadmap ({generatedResult.tasks?.length || 0} subtasks):</span>
+              <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
+                {generatedResult.tasks?.map((task, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-xs p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                    <span className="text-slate-300 font-mono truncate max-w-[80%]">{task.title}</span>
+                    <span className="text-slate-400 text-[10px]">~{task.estimatedMinutes}m</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* One-Click Import Button */}
             <button
               onClick={handleImportProject}
-              className="w-full flex items-center justify-center space-x-2 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition shadow-md shadow-emerald-500/20"
+              className="w-full flex items-center justify-center space-x-2 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 transition"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>Import Plan as Active Workspace Project</span>
+              <span>Import to Active Project Workspace ({generatedResult.tasks?.length || 0} Subtasks)</span>
             </button>
           </div>
         )}
-
       </div>
     </TileWrapper>
   );

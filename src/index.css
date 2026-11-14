@@ -1,198 +1,219 @@
-/* Custom Design System & CSS Variables */
+/* ==========================================================================
+   OBSIDIAN STUDIO DESIGN SYSTEM & THEME TOKENS
+   Strict Anti-Slop, High-Hierarchy Visual Architecture
+   ========================================================================== */
+
 :root {
-  --bg-primary: #07090e;
-  --bg-secondary: #0d121d;
-  --bg-card: rgba(18, 24, 38, 0.75);
-  --bg-card-hover: rgba(26, 35, 54, 0.85);
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-glow: rgba(56, 189, 248, 0.3);
-  
+  /* 3-Tier Surface Depth Palette */
+  --surface-base: #06080d;
+  --surface-elevated: #0b101b;
+  --surface-elevated-hover: #0f1624;
+  --surface-inset: #111827;
+  --surface-inset-hover: #162033;
+  --surface-active: rgba(6, 182, 212, 0.12);
+
+  /* Hairline Borders & Specular Light */
+  --border-hairline: rgba(255, 255, 255, 0.07);
+  --border-specular: rgba(255, 255, 255, 0.12);
+  --border-focus: rgba(6, 182, 212, 0.5);
+  --border-hover: rgba(255, 255, 255, 0.15);
+
+  /* Accent & Status Tokens (WCAG AA Compliant >= 4.5:1) */
   --accent-cyan: #06b6d4;
-  --accent-blue: #3b82f6;
-  --accent-violet: #8b5cf6;
-  --accent-emerald: #10b981;
-  --accent-rose: #f43f5e;
-  --accent-amber: #f59e0b;
+  --accent-cyan-light: #22d3ee;
+  --accent-cyan-glow: rgba(6, 182, 212, 0.25);
+  
+  --accent-indigo: #6366f1;
+  --accent-indigo-light: #818cf8;
+  --accent-indigo-glow: rgba(99, 102, 241, 0.25);
+
+  --status-emerald: #10b981;
+  --status-emerald-glow: rgba(16, 185, 129, 0.25);
+  --status-amber: #f59e0b;
+  --status-rose: #f43f5e;
+
+  /* Typography Colors */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-subtle: #475569;
+
+  /* Concentric Radius Tokens (inner = outer - padding) */
+  --radius-outer: 18px;
+  --radius-inner: 10px;
+  --radius-control: 8px;
+  --radius-pill: 9999px;
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: var(--bg-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--surface-base);
   background-image: 
-    radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.08) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.08) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.04) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.04) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.03) 0px, transparent 50%);
   background-attachment: fixed;
-  color: #f1f5f9;
+  color: var(--text-primary);
   overflow-x: hidden;
+  text-rendering: optimizeLegibility;
 }
 
-/* Glassmorphism Card Style */
-.glass-panel {
-  background: var(--bg-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+/* ==========================================================================
+   TYPOGRAPHY DISCIPLINES
+   ========================================================================== */
+
+h1, h2, h3, h4 {
+  text-wrap: balance;
+  letter-spacing: -0.02em;
 }
 
-.glass-panel:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 12px 35px -8px rgba(6, 182, 212, 0.12);
+p, span, label {
+  text-wrap: pretty;
 }
 
-.glass-panel-active {
+/* Monospace restricted to indices, metrics, clocks, shortcuts & code */
+.font-mono,
+kbd,
+code,
+pre,
+.tabular-nums {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* ==========================================================================
+   CONCENTRIC SURFACE CONTAINERS & HAIRLINE BORDERS
+   ========================================================================== */
+
+.studio-panel {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-hairline);
+  border-top-color: var(--border-specular);
+  border-radius: var(--radius-outer);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.4),
+    0 20px 25px -5px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.studio-panel:hover {
+  border-color: var(--border-hover);
+  border-top-color: rgba(255, 255, 255, 0.2);
+}
+
+.studio-panel-active {
   border-color: var(--accent-cyan);
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
+  box-shadow: 0 0 25px var(--accent-cyan-glow);
 }
 
-/* Custom Input Styling & Dark Theme Form Fixes */
+.studio-inset {
+  background: var(--surface-inset);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-inner);
+}
+
+.studio-inset-hover:hover {
+  background: var(--surface-inset-hover);
+  border-color: var(--border-hover);
+}
+
+/* ==========================================================================
+   INPUTS & FORM CONTROLS
+   ========================================================================== */
+
 input,
 textarea,
-select,
-[type='text'],
-[type='email'],
-[type='url'],
-[type='password'],
-[type='number'],
-[type='search'] {
-  background-color: #0d121d !important;
-  background: #0d121d !important;
-  color: #f8fafc !important;
-  border-color: #1e293b !important;
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
-  box-shadow: none !important;
+select {
+  background-color: var(--surface-inset) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: var(--radius-inner);
+  transition: all 0.15s ease-out;
 }
 
 input:focus,
 textarea:focus,
-select:focus,
-[type='text']:focus,
-[type='email']:focus,
-[type='url']:focus,
-[type='password']:focus,
-[type='number']:focus,
-[type='search']:focus {
-  background-color: #0d121d !important;
-  background: #0d121d !important;
-  color: #f8fafc !important;
-  border-color: #06b6d4 !important;
-  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.3) !important;
+select:focus {
+  border-color: var(--accent-cyan) !important;
+  box-shadow: 0 0 0 2px var(--accent-cyan-glow) !important;
   outline: none !important;
 }
 
-.glass-input {
-  background-color: #0d121d !important;
-  background: #0d121d !important;
-  color: #f8fafc !important;
-  border: 1px solid #1e293b !important;
-  border-radius: 8px;
-  padding: 8px 14px;
-  outline: none !important;
-  transition: all 0.2s ease;
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted) !important;
 }
 
-.glass-input::placeholder {
-  color: #64748b !important;
-}
-
-.glass-input:focus {
-  border-color: #06b6d4 !important;
-  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.3) !important;
-}
-
-/* Fix browser autofill / pasted link background & text color turning white */
+/* Autofill Dark Override */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus,
 textarea:-webkit-autofill,
-textarea:-webkit-autofill:hover,
 textarea:-webkit-autofill:focus,
 select:-webkit-autofill {
-  -webkit-text-fill-color: #f8fafc !important;
-  -webkit-box-shadow: 0 0 0px 1000px #0d121d inset !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+  -webkit-box-shadow: 0 0 0px 1000px var(--surface-inset) inset !important;
   transition: background-color 5000s ease-in-out 0s !important;
-  color: #f8fafc !important;
 }
 
-/* Bento Grid System */
-.bento-container {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 16px;
-}
+/* ==========================================================================
+   HEATMAP GRID CELL INTENSITIES
+   ========================================================================== */
 
-@media (max-width: 1024px) {
-  .bento-container {
-    grid-template-columns: repeat(1, 1fr);
-  }
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 9999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(6, 182, 212, 0.5);
-}
-
-/* Monospace font utility */
-.font-mono {
-  font-family: 'JetBrains Mono', monospace;
-}
-
-/* Glow Utilities */
-.glow-cyan {
-  text-shadow: 0 0 12px rgba(6, 182, 212, 0.6);
-}
-
-.glow-violet {
-  text-shadow: 0 0 12px rgba(139, 92, 246, 0.6);
-}
-
-.glow-emerald {
-  text-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
-}
-
-/* Heatmap Grid Cell Intensities */
 .heatmap-level-0 {
-  background-color: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .heatmap-level-1 {
-  background-color: rgba(6, 182, 212, 0.25);
-  border: 1px solid rgba(6, 182, 212, 0.4);
+  background-color: rgba(6, 182, 212, 0.22);
+  border: 1px solid rgba(6, 182, 212, 0.35);
 }
 
 .heatmap-level-2 {
   background-color: rgba(6, 182, 212, 0.55);
-  box-shadow: 0 0 6px rgba(6, 182, 212, 0.3);
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.25);
 }
 
 .heatmap-level-3 {
-  background-color: rgba(139, 92, 246, 0.75);
-  box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
+  background-color: rgba(99, 102, 241, 0.75);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.35);
 }
 
 .heatmap-level-4 {
   background-color: #10b981;
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.7);
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.65);
+}
+
+/* ==========================================================================
+   SCROLLBAR STYLING
+   ========================================================================== */
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-cyan);
 }

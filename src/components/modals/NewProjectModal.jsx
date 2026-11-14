@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAppState } from '../../context/AppStateContext';
-import { Plus, X, FolderKanban, UploadCloud, Image as ImageIcon, GraduationCap, Lightbulb } from 'lucide-react';
+import { Plus, X, FolderKanban, UploadCloud, GraduationCap, Lightbulb } from 'lucide-react';
 
 export function NewProjectModal() {
   const { isNewProjectModalOpen, setIsNewProjectModalOpen, addProject, showToast } = useAppState();
@@ -10,13 +11,11 @@ export function NewProjectModal() {
   const [projectType, setProjectType] = useState('academic'); // 'academic' | 'learning'
   const [category, setCategory] = useState('Web Dev');
   const [targetHours, setTargetHours] = useState(10);
-  const [tagsInput, setTagsInput] = useState('');
+  const [tagsInput, setTagsInput] = useState('React, Tailwind');
   const [initialTaskInput, setInitialTaskInput] = useState('');
   const [imageUrl, setImageUrl] = useState(null);
 
   const fileInputRef = useRef(null);
-
-  if (!isNewProjectModalOpen) return null;
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -76,189 +75,226 @@ export function NewProjectModal() {
   };
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md px-4 animate-in fade-in duration-150"
-      onClick={() => setIsNewProjectModalOpen(false)}
-    >
-      <div 
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg glass-panel bg-slate-900/95 border-cyan-500/50 shadow-2xl overflow-hidden rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto"
-      >
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-          <div className="flex items-center space-x-2.5">
-            <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
-              <FolderKanban className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-base text-slate-100">Create New Project</h3>
-              <p className="text-xs text-slate-400">Add a custom workspace project to track</p>
-            </div>
-          </div>
+    <AnimatePresence>
+      {isNewProjectModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          onClick={() => setIsNewProjectModalOpen(false)}
+        >
+          {/* Backdrop */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 bg-[#06080d]/80 backdrop-blur-md" 
+          />
 
-          <button 
-            onClick={() => setIsNewProjectModalOpen(false)}
-            className="text-slate-500 hover:text-white p-1"
+          {/* Modal Container */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg studio-panel bg-[#0b101b] border-cyan-500/40 shadow-2xl rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto relative z-10"
           >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
-          <div>
-            <label className="block font-semibold text-slate-300 mb-1">Project Title</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g., Fullstack Realtime Chat App"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="glass-input w-full text-xs"
-            />
-          </div>
-
-          {/* PROJECT TYPE SELECTOR (Academic Project vs Learning Project) */}
-          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
-            <label className="block font-bold text-slate-200">
-              Project Type <span className="text-cyan-400 font-normal">(Select Academic or Learning)</span>
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setProjectType('academic')}
-                className={`flex items-center justify-center space-x-2 py-2 px-3 rounded-xl border text-xs font-semibold transition ${
-                  projectType === 'academic'
-                    ? 'bg-violet-600/25 text-violet-300 border-violet-500 shadow-md shadow-violet-500/20'
-                    : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
-                }`}
-              >
-                <GraduationCap className="w-4 h-4 text-violet-400" />
-                <span>🎓 Academic Project</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setProjectType('learning')}
-                className={`flex items-center justify-center space-x-2 py-2 px-3 rounded-xl border text-xs font-semibold transition ${
-                  projectType === 'learning'
-                    ? 'bg-cyan-600/25 text-cyan-300 border-cyan-500 shadow-md shadow-cyan-500/20'
-                    : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
-                }`}
-              >
-                <Lightbulb className="w-4 h-4 text-cyan-400" />
-                <span>💡 Learning Project</span>
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="block font-semibold text-slate-300 mb-1">Description</label>
-            <textarea
-              rows={2}
-              placeholder="Brief overview of goal and scope..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="glass-input w-full text-xs resize-none"
-            />
-          </div>
-
-          {/* Project Cover Image Upload */}
-          <div>
-            <label className="block font-semibold text-slate-300 mb-1">Project Screenshot / Cover Image (Optional)</label>
-            {imageUrl ? (
-              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800">
-                <div className="flex items-center space-x-3">
-                  <img src={imageUrl} alt="Cover Preview" className="w-12 h-12 rounded-lg object-cover border border-slate-700" />
-                  <span className="text-xs text-cyan-400">Image attached</span>
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+              <div className="flex items-center space-x-2.5">
+                <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/25">
+                  <FolderKanban className="w-5 h-5" />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setImageUrl(null)}
-                  className="p-1 text-slate-400 hover:text-rose-400"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <div>
+                  <h3 className="font-bold text-base text-slate-100">Create New Project</h3>
+                  <p className="text-xs text-slate-400">Add a custom workspace project with subtasks</p>
+                </div>
               </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-xl bg-slate-950/80 hover:bg-slate-900 border border-dashed border-slate-700 text-slate-300 text-xs transition"
+
+              <button 
+                onClick={() => setIsNewProjectModalOpen(false)}
+                className="text-slate-500 hover:text-white p-1 rounded transition"
+                aria-label="Close new project modal"
               >
-                <ImageIcon className="w-4 h-4 text-cyan-400" />
-                <span>Upload Cover Image / Wireframe</span>
+                <X className="w-5 h-5" />
               </button>
-            )}
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
-            />
-          </div>
+            </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block font-semibold text-slate-300 mb-1">Category</label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="glass-input w-full text-xs"
+            <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
+              
+              {/* Title */}
+              <div>
+                <label htmlFor="new-proj-title" className="block font-semibold text-slate-300 mb-1">
+                  Project Title *
+                </label>
+                <input
+                  id="new-proj-title"
+                  name="title"
+                  type="text"
+                  required
+                  placeholder="e.g. Distributed Task Queue Engine"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full text-xs p-2.5 rounded-lg bg-[#111827] text-slate-100 placeholder-slate-500 border border-white/[0.08]"
+                />
+              </div>
+
+              {/* Project Type */}
+              <div className="p-2.5 rounded-xl bg-[#090d16] border border-white/[0.06] space-y-1.5">
+                <span className="block font-semibold text-slate-300 text-xs">
+                  Project Type <span className="text-cyan-400 font-normal font-mono">(Select Classification)</span>
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setProjectType('academic')}
+                    className={`flex items-center justify-center space-x-1.5 py-1.5 px-3 rounded-lg border text-xs font-semibold transition cursor-pointer ${
+                      projectType === 'academic'
+                        ? 'bg-indigo-600/25 text-indigo-300 border-indigo-500/50 shadow-sm'
+                        : 'bg-[#111827]/60 text-slate-400 border-white/[0.05]'
+                    }`}
+                  >
+                    <GraduationCap className="w-3.5 h-3.5" />
+                    <span>Academic Project</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setProjectType('learning')}
+                    className={`flex items-center justify-center space-x-1.5 py-1.5 px-3 rounded-lg border text-xs font-semibold transition cursor-pointer ${
+                      projectType === 'learning'
+                        ? 'bg-cyan-600/25 text-cyan-300 border-cyan-500/50 shadow-sm'
+                        : 'bg-[#111827]/60 text-slate-400 border-white/[0.05]'
+                    }`}
+                  >
+                    <Lightbulb className="w-3.5 h-3.5" />
+                    <span>Learning Project</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label htmlFor="new-proj-desc" className="block font-semibold text-slate-300 mb-1">
+                  Description
+                </label>
+                <textarea
+                  id="new-proj-desc"
+                  name="description"
+                  rows={2}
+                  placeholder="High-level architecture overview and goals..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full text-xs p-2.5 rounded-lg bg-[#111827] text-slate-100 placeholder-slate-500 border border-white/[0.08] resize-none"
+                />
+              </div>
+
+              {/* Image Upload Option */}
+              <div>
+                <span className="block font-semibold text-slate-300 mb-1">
+                  Project Screenshot / Cover Image (Optional)
+                </span>
+                {imageUrl ? (
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-[#090d16] border border-white/[0.08]">
+                    <div className="flex items-center space-x-3">
+                      <img src={imageUrl} alt="Cover preview" className="w-10 h-10 rounded-lg object-cover border border-white/[0.1]" />
+                      <span className="text-xs text-cyan-400 font-mono">Image attached</span>
+                    </div>
+                    <button type="button" onClick={() => setImageUrl(null)} className="p-1 text-slate-400 hover:text-rose-400">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-xl bg-[#090d16] hover:bg-[#111827] border border-dashed border-white/[0.1] text-slate-300 text-xs transition cursor-pointer"
+                  >
+                    <UploadCloud className="w-4 h-4 text-cyan-400" />
+                    <span>Upload Cover Image or Wireframe</span>
+                  </button>
+                )}
+                <input type="file" ref={fileInputRef} accept="image/*" onChange={handleImageChange} className="hidden" />
+              </div>
+
+              {/* Category & Hours */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="new-proj-category" className="block font-semibold text-slate-300 mb-1">
+                    Category
+                  </label>
+                  <select
+                    id="new-proj-category"
+                    name="category"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full text-xs p-2 rounded-lg bg-[#111827] text-slate-100 border border-white/[0.08]"
+                  >
+                    <option value="Web Dev">Web Dev</option>
+                    <option value="AI Systems">AI Systems</option>
+                    <option value="Mobile Dev">Mobile Dev</option>
+                    <option value="Developer Tools">Developer Tools</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="new-proj-hours" className="block font-semibold text-slate-300 mb-1">
+                    Target Hours
+                  </label>
+                  <input
+                    id="new-proj-hours"
+                    name="targetHours"
+                    type="number"
+                    min={1}
+                    max={500}
+                    value={targetHours}
+                    onChange={(e) => setTargetHours(e.target.value)}
+                    className="w-full text-xs p-2 rounded-lg bg-[#111827] text-slate-100 border border-white/[0.08] font-mono tabular-nums"
+                  />
+                </div>
+              </div>
+
+              {/* Tags */}
+              <div>
+                <label htmlFor="new-proj-tags" className="block font-semibold text-slate-300 mb-1">
+                  Tags (Comma-separated)
+                </label>
+                <input
+                  id="new-proj-tags"
+                  name="tags"
+                  type="text"
+                  placeholder="React, TypeScript, Tailwind, Rust"
+                  value={tagsInput}
+                  onChange={(e) => setTagsInput(e.target.value)}
+                  className="w-full text-xs p-2 rounded-lg bg-[#111827] text-slate-100 placeholder-slate-500 border border-white/[0.08]"
+                />
+              </div>
+
+              {/* Initial Subtasks */}
+              <div>
+                <label htmlFor="new-proj-tasks" className="block font-semibold text-slate-300 mb-1">
+                  Initial Subtasks (One per line)
+                </label>
+                <textarea
+                  id="new-proj-tasks"
+                  name="initialTasks"
+                  rows={3}
+                  placeholder="Setup monorepo structure&#10;Implement authentication tokens&#10;Configure CI/CD"
+                  value={initialTaskInput}
+                  onChange={(e) => setInitialTaskInput(e.target.value)}
+                  className="w-full text-xs p-2 rounded-lg bg-[#111827] text-slate-100 placeholder-slate-500 border border-white/[0.08] font-mono resize-none"
+                />
+              </div>
+
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                type="submit"
+                className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md shadow-cyan-500/25 transition cursor-pointer"
               >
-                <option value="Web Dev">Web Dev</option>
-                <option value="AI Systems">AI Systems</option>
-                <option value="Mobile Dev">Mobile Dev</option>
-                <option value="Developer Tools">Developer Tools</option>
-                <option value="Design">Design</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block font-semibold text-slate-300 mb-1">Target Hours</label>
-              <input
-                type="number"
-                min={1}
-                max={500}
-                value={targetHours}
-                onChange={(e) => setTargetHours(e.target.value)}
-                className="glass-input w-full text-xs font-mono"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block font-semibold text-slate-300 mb-1">
-              Which tech stack combination do you want to use?
-            </label>
-            <input
-              type="text"
-              placeholder="e.g., React, Node.js, PostgreSQL, Tailwind CSS, Python..."
-              value={tagsInput}
-              onChange={(e) => setTagsInput(e.target.value)}
-              className="glass-input w-full text-xs font-mono"
-            />
-          </div>
-
-          <div>
-            <label className="block font-semibold text-slate-300 mb-1">Initial Subtasks (One per line - optional)</label>
-            <textarea
-              rows={2}
-              placeholder="Custom subtasks (Leave empty to generate 21 step-by-step subtasks automatically)"
-              value={initialTaskInput}
-              onChange={(e) => setInitialTaskInput(e.target.value)}
-              className="glass-input w-full text-xs font-mono"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition shadow-lg shadow-cyan-500/20"
-          >
-            Create Project ({projectType === 'academic' ? '🎓 Academic' : '💡 Learning'})
-          </button>
-        </form>
-
-      </div>
-    </div>
+                Create Project
+              </motion.button>
+            </form>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 }

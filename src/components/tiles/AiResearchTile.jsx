@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAppState } from '../../context/AppStateContext';
 import { TileWrapper } from './TileWrapper';
 import { 
@@ -17,7 +18,8 @@ import {
   X,
   FileImage,
   GraduationCap,
-  Lightbulb
+  Lightbulb,
+  ExternalLink
 } from 'lucide-react';
 import { generateProjectBreakdown } from '../../services/genAiService';
 
@@ -100,18 +102,21 @@ export function AiResearchTile() {
     setPromptText('');
     setSourceUrl('');
     setSelectedImage(null);
+    setPreferredTechStack('');
   };
 
   const handlePaste = (e) => {
     const items = e.clipboardData?.items;
-    if (items) {
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          const file = items[i].getAsFile();
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image/')) {
+        const file = items[i].getAsFile();
+        if (file) {
+          e.preventDefault();
           const reader = new FileReader();
           reader.onload = (evt) => {
             setSelectedImage({
-              name: `pasted_image_${Date.now()}.png`,
+              name: file.name || `pasted-wireframe-${Date.now()}.png`,
               dataUrl: evt.target.result
             });
             showToast('📋 Image pasted from clipboard!');
@@ -123,10 +128,7 @@ export function AiResearchTile() {
     }
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
-
+  const handleDragOver = (e) => e.preventDefault();
   const handleDrop = (e) => {
     e.preventDefault();
     const file = e.dataTransfer?.files?.[0];
@@ -137,7 +139,7 @@ export function AiResearchTile() {
           name: file.name,
           dataUrl: evt.target.result
         });
-        showToast('📥 Image dropped!');
+        showToast('📥 Mockup dropped successfully!');
       };
       reader.readAsDataURL(file);
     }
@@ -145,123 +147,118 @@ export function AiResearchTile() {
 
   return (
     <TileWrapper
-      title="GenAI Architecture & Breakdown"
+      title="GenAI Architect & Research"
       icon={Sparkles}
-      badge="antigravity-preview-05-2026"
-      colSpan="col-span-12"
-      headerAccent="text-violet-400"
+      badge="GEMINI 2026"
+      colSpan="col-span-12 lg:col-span-5"
+      headerAccent="text-indigo-400"
       actions={
         !settings.apiKey && (
-          <button
+          <motion.button
+            whileTap={{ scale: 0.95 }}
             onClick={() => setIsApiKeyModalOpen(true)}
-            className="flex items-center space-x-1 px-2 py-0.5 text-[11px] rounded bg-amber-500/10 text-amber-300 border border-amber-500/30"
+            className="flex items-center space-x-1 px-2 py-0.5 text-[10px] font-mono rounded bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 transition cursor-pointer"
+            title="Configure Gemini API Key"
           >
             <Key className="w-3 h-3" />
             <span>Set Key</span>
-          </button>
+          </motion.button>
         )
       }
     >
-      <div className="flex flex-col space-y-4" onPaste={handlePaste}>
+      <div className="flex flex-col space-y-3.5" onPaste={handlePaste}>
+        
+        {/* Project Type Selector */}
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setProjectType('academic')}
+            className={`flex items-center justify-center space-x-1.5 py-1.5 px-2.5 rounded-lg border text-xs font-semibold transition cursor-pointer ${
+              projectType === 'academic'
+                ? 'bg-indigo-600/20 text-indigo-300 border-indigo-500/40 shadow-sm'
+                : 'bg-[#111827]/60 text-slate-400 border-white/[0.06] hover:bg-[#162033]'
+            }`}
+          >
+            <GraduationCap className="w-3.5 h-3.5" />
+            <span>Academic Project</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setProjectType('learning')}
+            className={`flex items-center justify-center space-x-1.5 py-1.5 px-2.5 rounded-lg border text-xs font-semibold transition cursor-pointer ${
+              projectType === 'learning'
+                ? 'bg-cyan-600/20 text-cyan-300 border-cyan-500/40 shadow-sm'
+                : 'bg-[#111827]/60 text-slate-400 border-white/[0.06] hover:bg-[#162033]'
+            }`}
+          >
+            <Lightbulb className="w-3.5 h-3.5" />
+            <span>Learning Project</span>
+          </button>
+        </div>
+
         {/* Input Form */}
         <form onSubmit={handleGenerate} className="space-y-3">
+          
+          {/* Prompt Input */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Project Idea or Prompt (Paste image with Ctrl+V)
+            <label htmlFor="ai-prompt-input" className="block text-[11px] font-semibold text-slate-300 mb-1">
+              Project Idea or Prompt <span className="text-slate-500 font-normal">(Ctrl+V to paste screenshot)</span>
             </label>
             <textarea
+              id="ai-prompt-input"
               rows={2}
-              placeholder="e.g., Build a real-time web video clipper using WebAssembly... (Paste screenshot via Ctrl+V)"
+              placeholder="e.g., Build an offline-first markdown notes sync engine with CRDTs..."
               value={promptText}
               onChange={(e) => setPromptText(e.target.value)}
               onPaste={handlePaste}
-              className="glass-input text-xs w-full resize-none"
+              className="w-full text-xs p-2.5 rounded-lg bg-[#111827] text-slate-100 placeholder-slate-500 border border-white/[0.08] resize-none"
               disabled={isLoading}
             />
           </div>
 
-          {/* PROJECT TYPE TOGGLE (Academic Project vs Learning Project) */}
-          <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1 text-xs">
-            <label className="block font-semibold text-slate-300">
-              Project Type <span className="text-cyan-400 font-normal">(Academic vs Learning)</span>
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setProjectType('academic')}
-                className={`flex items-center justify-center space-x-1.5 py-1.5 px-3 rounded-lg border text-xs font-semibold transition ${
-                  projectType === 'academic'
-                    ? 'bg-violet-600/25 text-violet-300 border-violet-500 shadow-md shadow-violet-500/20'
-                    : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
-                }`}
-              >
-                <GraduationCap className="w-3.5 h-3.5 text-violet-400" />
-                <span>🎓 Academic Project</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setProjectType('learning')}
-                className={`flex items-center justify-center space-x-1.5 py-1.5 px-3 rounded-lg border text-xs font-semibold transition ${
-                  projectType === 'learning'
-                    ? 'bg-cyan-600/25 text-cyan-300 border-cyan-500 shadow-md shadow-cyan-500/20'
-                    : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
-                }`}
-              >
-                <Lightbulb className="w-3.5 h-3.5 text-cyan-400" />
-                <span>💡 Learning Project</span>
-              </button>
+          {/* Reference URL */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label htmlFor="ai-url-input" className="text-[11px] font-semibold text-slate-300">
+                Reference Link / Reel URL <span className="text-slate-500 font-normal">(Optional)</span>
+              </label>
+              <Globe className="w-3 h-3 text-slate-500" />
             </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Which tech stack combination do you want to use? (Optional)
-            </label>
             <input
-              type="text"
-              placeholder="e.g., React, Node.js, PostgreSQL, Tailwind CSS, Python..."
-              value={preferredTechStack}
-              onChange={(e) => setPreferredTechStack(e.target.value)}
-              className="glass-input text-xs w-full font-mono bg-slate-900"
-              disabled={isLoading}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
-              <span>Reference Link / Reel URL (Optional)</span>
-              <Globe className="w-3 h-3 text-slate-400" />
-            </label>
-            <input
+              id="ai-url-input"
               type="url"
-              placeholder="https://www.instagram.com/reel/... or GitHub URL"
+              placeholder="https://instagram.com/reel/... or GitHub URL"
               value={sourceUrl}
               onChange={(e) => setSourceUrl(e.target.value)}
-              className="glass-input text-xs w-full bg-slate-900 text-slate-100 placeholder-slate-500 font-mono"
+              className="w-full text-xs p-2 rounded-lg bg-[#111827] text-slate-100 placeholder-slate-500 border border-white/[0.08] font-mono"
               disabled={isLoading}
             />
           </div>
 
-          {/* Image Upload / Drag & Drop / Paste Area */}
+          {/* Mockup Upload / Drop Zone */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Attach Wireframe / UI Screenshot (Upload, Drag & Drop, or Paste Ctrl+V)
-            </label>
-            
+            <span className="block text-[11px] font-semibold text-slate-300 mb-1">
+              Wireframe / Screenshot Attachment
+            </span>
             {selectedImage ? (
-              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 border border-cyan-500/50">
-                <div className="flex items-center space-x-3 min-w-0">
-                  <img src={selectedImage.dataUrl} alt="Preview" className="w-10 h-10 rounded-lg object-cover border border-cyan-500/40" />
+              <div className="flex items-center justify-between p-2 rounded-lg bg-[#111827] border border-cyan-500/40">
+                <div className="flex items-center space-x-2.5 min-w-0">
+                  <img
+                    src={selectedImage.dataUrl}
+                    alt="Mockup preview"
+                    className="w-9 h-9 rounded object-cover border border-white/[0.1] flex-shrink-0"
+                  />
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-slate-200 truncate">{selectedImage.name}</p>
-                    <p className="text-[10px] text-cyan-400">Attached • Ready for Gemini vision analysis</p>
+                    <span className="block text-xs font-semibold text-slate-200 truncate">{selectedImage.name}</span>
+                    <span className="block text-[10px] text-cyan-400 font-mono">Attached for Gemini vision</span>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedImage(null)}
-                  className="p-1 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800"
+                  className="p-1 text-slate-400 hover:text-rose-400 transition"
+                  title="Remove image"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -271,16 +268,12 @@ export function AiResearchTile() {
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 onClick={() => imageInputRef.current?.click()}
-                className="flex flex-col items-center justify-center py-3 px-4 rounded-xl bg-slate-900/50 hover:bg-slate-900 border border-dashed border-slate-700 hover:border-cyan-500/50 cursor-pointer transition text-center group"
+                className="w-full flex items-center justify-center space-x-2 py-2.5 px-3 rounded-lg bg-[#111827]/60 hover:bg-[#111827] border border-dashed border-white/[0.1] hover:border-cyan-500/40 text-slate-400 text-xs transition cursor-pointer"
               >
-                <UploadCloud className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform mb-1" />
-                <span className="text-xs font-medium text-slate-300">
-                  <strong className="text-cyan-400">Upload Image</strong>, Drag & Drop, or Paste (<kbd className="px-1 py-0.5 rounded bg-slate-800 text-[10px] font-mono">Ctrl+V</kbd>)
-                </span>
-                <span className="text-[10px] text-slate-400 mt-0.5">Supports PNG, JPG, WebP screenshots</span>
+                <UploadCloud className="w-4 h-4 text-cyan-400" />
+                <span>Upload, Drop, or Paste Screenshot</span>
               </div>
             )}
-
             <input
               type="file"
               ref={imageInputRef}
@@ -290,72 +283,75 @@ export function AiResearchTile() {
             />
           </div>
 
-          <button
+          {/* Generate Button */}
+          <motion.button
+            whileTap={{ scale: 0.97 }}
             type="submit"
-            disabled={isLoading}
-            className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-violet-600/20 disabled:opacity-50 transition"
+            disabled={isLoading || (!promptText.trim() && !sourceUrl.trim() && !selectedImage)}
+            className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:opacity-95 text-white font-bold text-xs shadow-md shadow-indigo-600/25 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition"
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin text-white" />
-                <span>{loadingStep || 'Executing Grounding Tools & Vision Breakdown...'}</span>
+                <Loader2 className="w-4 h-4 animate-spin text-cyan-200" />
+                <span className="truncate">{loadingStep}</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4 text-violet-300" />
-                <span>Research & Generate Structured JSON Plan ({projectType === 'academic' ? '🎓 Academic' : '💡 Learning'})</span>
+                <Sparkles className="w-4 h-4 text-cyan-200" />
+                <span>Architect & Generate Execution Plan</span>
               </>
             )}
-          </button>
+          </motion.button>
         </form>
 
-        {/* Results Preview Card */}
-        {generatedResult && (
-          <div className="p-4 rounded-2xl bg-slate-900 border border-violet-500/40 space-y-3 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-violet-500/20 text-violet-300 border border-violet-500/40">
-                  {generatedResult.category}
-                </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-                  {generatedResult.projectType === 'academic' ? '🎓 Academic' : '💡 Learning'}
-                </span>
-                <h4 className="font-bold text-slate-100 text-sm">{generatedResult.title}</h4>
+        {/* Generated Result Card Preview */}
+        <AnimatePresence>
+          {generatedResult && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="p-3.5 rounded-xl bg-[#090d16] border border-cyan-500/40 space-y-3"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                    {generatedResult.category || 'Developer Project'}
+                  </span>
+                  <h4 className="font-bold text-slate-100 text-xs mt-1">{generatedResult.title}</h4>
+                  <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-2">{generatedResult.description}</p>
+                </div>
               </div>
-              <span className="text-xs text-slate-400 font-mono">Target ~{generatedResult.targetHours}h</span>
-            </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">{generatedResult.description}</p>
-
-            <div className="flex items-center space-x-1.5 flex-wrap gap-y-1">
-              {generatedResult.tags?.map((t, idx) => (
-                <span key={idx} className="px-2 py-0.5 rounded text-[10px] bg-slate-950 text-slate-300 border border-slate-800">
-                  #{t}
-                </span>
-              ))}
-            </div>
-
-            <div className="pt-2 border-t border-slate-800 space-y-1.5">
-              <span className="text-[11px] font-semibold text-slate-400 block">Generated Subtasks Roadmap ({generatedResult.tasks?.length || 0} subtasks):</span>
-              <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
-                {generatedResult.tasks?.map((task, idx) => (
-                  <div key={idx} className="flex items-center justify-between text-xs p-1.5 rounded-lg bg-slate-950 border border-slate-800">
-                    <span className="text-slate-300 font-mono truncate max-w-[80%]">{task.title}</span>
-                    <span className="text-slate-400 text-[10px]">~{task.estimatedMinutes}m</span>
+              {/* Task list preview */}
+              <div className="space-y-1 max-h-32 overflow-y-auto pr-1">
+                {generatedResult.tasks?.slice(0, 6).map((task) => (
+                  <div key={task.id} className="flex items-center justify-between p-1.5 rounded bg-[#111827] text-[11px] border border-white/[0.05]">
+                    <span className="text-slate-300 truncate">{task.title}</span>
+                    <span className="text-[10px] font-mono text-cyan-400 px-1.5 py-0.2 rounded bg-[#0b101b] ml-1 flex-shrink-0 tabular-nums">
+                      ~{task.estimatedMinutes}m
+                    </span>
                   </div>
                 ))}
+                {generatedResult.tasks?.length > 6 && (
+                  <div className="text-center text-[10px] font-mono text-slate-500 py-1">
+                    + {generatedResult.tasks.length - 6} more subtasks generated
+                  </div>
+                )}
               </div>
-            </div>
 
-            <button
-              onClick={handleImportProject}
-              className="w-full flex items-center justify-center space-x-2 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 transition"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>Import to Active Project Workspace ({generatedResult.tasks?.length || 0} Subtasks)</span>
-            </button>
-          </div>
-        )}
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={handleImportProject}
+                className="w-full flex items-center justify-center space-x-1.5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 cursor-pointer"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Import Plan to Workspace</span>
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </div>
     </TileWrapper>
   );

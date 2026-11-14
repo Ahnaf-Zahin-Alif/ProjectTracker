@@ -225,7 +225,7 @@ export function BlankPage() {
           onClick={() => setIsNewProjectModalOpen(true)}
           className="w-full sm:w-auto flex items-center justify-center space-x-1.5 px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition shadow-lg shadow-cyan-500/20"
         >
-          <Plus className="w-4 h-4 stroke-[3]" />
+          <Plus className="w-4 h-4 stroke-2" />
           <span>New Project</span>
         </button>
       </div>
@@ -341,7 +341,7 @@ export function BlankPage() {
                           className="p-2 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-500/30 transition"
                           title="Start Focus Timer"
                         >
-                          <Play className="w-4 h-4 fill-current" />
+                          <Play className="w-4 h-4 fill-current ml-0.5" />
                         </button>
 
                         <button
@@ -493,7 +493,7 @@ export function BlankPage() {
                     }}
                     className="flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition shadow-lg shadow-cyan-500/25"
                   >
-                    <Play className="w-4 h-4 fill-current" />
+                    <Play className="w-4 h-4 fill-current ml-0.5" />
                     <span>Launch Focus Timer</span>
                   </button>
                 </div>

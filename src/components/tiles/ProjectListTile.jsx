@@ -210,7 +210,7 @@ export function ProjectListTile() {
                       className="p-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 transition"
                       title="Focus on this project"
                     >
-                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
                     </button>
 
                     <button

@@ -224,7 +224,7 @@ export function FocusTimerTile() {
                   onClick={startTimer}
                   className="flex-1 flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-400 to-cyan-500 text-slate-950 font-bold text-xs shadow-md shadow-cyan-500/25 cursor-pointer"
                 >
-                  <Play className="w-4 h-4 fill-current" />
+                  <Play className="w-4 h-4 fill-current ml-0.5" />
                   <span>Start Focus Session</span>
                 </motion.button>
               )}

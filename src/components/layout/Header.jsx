@@ -71,7 +71,7 @@ export function Header() {
               title="New Project"
               aria-label="Create new project"
             >
-              <Plus className="w-4 h-4 stroke-[3]" />
+              <Plus className="w-4 h-4 stroke-2" />
             </motion.button>
           </div>
         </div>
@@ -151,7 +151,7 @@ export function Header() {
             onClick={() => setIsNewProjectModalOpen(true)}
             className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition shadow-md shadow-cyan-500/20 cursor-pointer"
           >
-            <Plus className="w-4 h-4 stroke-[3]" />
+            <Plus className="w-4 h-4 stroke-2" />
             <span>New Project</span>
           </motion.button>
         </div>

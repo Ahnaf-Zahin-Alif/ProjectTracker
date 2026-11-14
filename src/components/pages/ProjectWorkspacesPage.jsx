@@ -393,8 +393,8 @@ export function ProjectWorkspacesPage() {
                           onChange={(e) => setNewTaskInputs({ ...newTaskInputs, [project.id]: e.target.value })}
                           className="glass-input text-xs w-full py-1.5 px-3"
                         />
-                        <button type="submit" className="p-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition flex-shrink-0">
-                          <Plus className="w-4 h-4 stroke-[3]" />
+                        <button type="submit" className="p-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition flex-shrink-0" aria-label="Add subtask">
+                          <Plus className="w-4 h-4 stroke-2" />
                         </button>
                       </form>
 
@@ -457,7 +457,7 @@ export function ProjectWorkspacesPage() {
                             }}
                             className="flex-1 flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-slate-950 font-extrabold text-xs shadow-lg shadow-cyan-500/20 hover:opacity-95 transition cursor-pointer"
                           >
-                            <Play className="w-4 h-4 fill-current" />
+                            <Play className="w-4 h-4 fill-current ml-0.5" />
                             <span>Start Focus Session</span>
                           </button>
                         )}
